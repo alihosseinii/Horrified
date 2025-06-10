@@ -1,7 +1,10 @@
-#ifndef TERRORTRACKER_H
-#define TERRORTRACKER_H
+#ifndef TERRORTRACKER_HPP
+#define TERRORTRACKER_HPP
 
+#include <iostream>
 #include <string>
+
+using namespace std;
 
 class TerrorTracker {
 private:

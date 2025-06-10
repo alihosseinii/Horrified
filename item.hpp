@@ -15,13 +15,14 @@ enum class ItemColor {
 
 class Item {
 private:
+    string name;
     ItemColor color;   
     int power;  
     string location;
 
 public:
-    Item(ItemColor color, int power, const string& location);
-
+    Item(string name, ItemColor color, int power, const string& location);
+    string getname() const;
     ItemColor getColor() const;
     int getPower() const;
     string getLocation() const;

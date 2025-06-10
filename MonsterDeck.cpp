@@ -48,41 +48,10 @@ void MonsterDeck::initializeDefaultCards() {
         {MonsterType::FrenziedMonster, 1, 2}
     }));
 
-    cards.emplace_back(MonsterCard(2, "Move closest hero or villager 1 space toward Dracula.", {
-        {MonsterType::InvisibleMan, 1, 2}, {MonsterType::FrenziedMonster, 1, 2}
-    }));
-
-    cards.emplace_back(MonsterCard(3, "Advance frenzy token and move all villagers 1 space toward their safe place.", {
-        {MonsterType::FrenziedMonster, 3, 2}
-    }));
-
     cards.emplace_back(MonsterCard(2, "Move Invisible Man to location with most items and remove all items there.", {
         {MonsterType::InvisibleMan, 1, 3}, {MonsterType::Dracula, 1, 3}
     }));
 
-    cards.emplace_back(MonsterCard(1, "Place Invisible Man in location of choice.", {
-        {MonsterType::FrenziedMonster, 1, 2}, {MonsterType::InvisibleMan, 1, 2}
-    }));
-
-    cards.emplace_back(MonsterCard(2, "Move Dracula to Institute.", {
-        {MonsterType::InvisibleMan, 1, 2}, {MonsterType::Dracula, 1, 2}
-    }));
-
-    cards.emplace_back(MonsterCard(3, "Place Dr. Reed and Prof. Pearson in Institute.", {
-        {MonsterType::FrenziedMonster, 1, 3}, {MonsterType::Dracula, 1, 2}
-    }));
-
-    cards.emplace_back(MonsterCard(0, "Place Dracula in Cave.", {
-        {MonsterType::Dracula, 1, 2}
-    }));
-
-    cards.emplace_back(MonsterCard(3, "Place two villagers in Mansion.", {
-        {MonsterType::FrenziedMonster, 1, 3}
-    }));
-
-    cards.emplace_back(MonsterCard(2, "Move Dracula and Invisible Man each 1 space.", {
-        {MonsterType::Dracula, 1, 2}, {MonsterType::InvisibleMan, 1, 2}
-    }));
 }
 
 void MonsterDeck::shuffle() {

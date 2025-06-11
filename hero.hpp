@@ -4,16 +4,21 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "town.hpp"
+#include "location.hpp"
+#include "map.hpp"
+#include "villagermanager.hpp"
+#include "item.hpp"
+
+std::string toSentenceCase(std::string name);
 
 class Hero {
 public:
-    Hero(const std::string& playerName, const std::string& heroName, int maxActions, std::shared_ptr<Town> startingTown);
+    Hero(const std::string& playerName, const std::string& heroName, int maxActions, std::shared_ptr<Location> startingLocation);
     virtual ~Hero() = default;
 
-    virtual void move(std::shared_ptr<Town> newTown);
-    //virtual void guide(Villager);
-    // virtual void pickUp();
+    virtual void move(std::shared_ptr<Location> newLocation, VillagerManager& villagerManager);
+    virtual void guide(VillagerManager& villagerManager, Map& map);
+    virtual void pickUp(ItemBag& itemBag);
     // virtual void advance();
     // virtual void defeat();
     virtual void specialAction() = 0; 
@@ -25,23 +30,24 @@ public:
     void setRemainingActions(int remainingActions);
     void resetActions(); 
 
+    std::vector<Item> getItems() const;
+
     // void addItem(const Item& item);
     // const std::vector<Item>& getItems() const;
 
     // void addPerkCard(const PerkCard& card);
     // const std::vector<PerkCard>& getPerkCards() const;
 
-    std::shared_ptr<Town> getCurrentTown() const;
-    void setCurrentTown(std::shared_ptr<Town> currentTown);
+    std::shared_ptr<Location> getCurrentLocation() const;
+    void setCurrentLocation(std::shared_ptr<Location> currentLocation);
     
 protected:
-    std::shared_ptr<Town> currentTown;
+    std::vector<Item> items;
+    std::shared_ptr<Location> currentLocation;
     std::string heroName;
     std::string playerName;
     int maxActions;
     int remainingActions;
-    // std::vector<Item> inventory;
-    // std::vector<PerkCard> perkCards;
 
     void setHeroName(std::string heroName);
     void setPlayerName(std::string playerName);

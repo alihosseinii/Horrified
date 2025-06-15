@@ -18,7 +18,7 @@ public:
 
     virtual void move(std::shared_ptr<Location> newLocation, VillagerManager& villagerManager);
     virtual void guide(VillagerManager& villagerManager, Map& map);
-    virtual void pickUp(ItemBag& itemBag);
+    virtual void pickUp();
     // virtual void advance();
     // virtual void defeat();
     virtual void specialAction() = 0; 
@@ -31,9 +31,6 @@ public:
     void resetActions(); 
 
     std::vector<Item> getItems() const;
-
-    // void addItem(const Item& item);
-    // const std::vector<Item>& getItems() const;
 
     // void addPerkCard(const PerkCard& card);
     // const std::vector<PerkCard>& getPerkCards() const;

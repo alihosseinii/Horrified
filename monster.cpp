@@ -1,17 +1,20 @@
 #include "monster.hpp"
-#include <stdexcept>
+#include <iostream>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
-#include <queue>
-#include <ctime>
-#include <algorithm>
+#include <stdexcept>
 
 using namespace std;
 
-Monster::Monster(const std::string& monsterName, std::shared_ptr<Town> startingTown) {
-    setMonsterName(monsterName);
-    setCurrentTown(startingTown);
-    currentTown->addCharacter(monsterName);
+Monster::Monster(const string& monsterName, shared_ptr<Location> startingLocation) {
+    this->monsterName = monsterName;
+    setCurrentLocation(startingLocation);
+    try {
+        currentLocation->addCharacter(monsterName);
+    } catch (const exception& e) {
+        throw runtime_error("Failed to add monster to location: " + string(e.what()));
+    }
 }
 
 string Monster::getMonsterName() const {
@@ -19,98 +22,76 @@ string Monster::getMonsterName() const {
 }
 
 void Monster::setMonsterName(string monsterName) {
-    if (monsterName == "Dracula" || monsterName == "Invisible man") {
-        this->monsterName = monsterName;
-    }
-    else {
-        throw invalid_argument("Invalid monster name.");
-    }
+    this->monsterName = monsterName;
 }
 
-shared_ptr<Town> Monster::getCurrentTown() const {
-    return currentTown;
+shared_ptr<Location> Monster::getCurrentLocation() const {
+    if (!currentLocation) {
+        throw runtime_error("Current location is not set");
+    }
+    return currentLocation;
 }
 
-void Monster::setCurrentTown(shared_ptr<Town> currentTown) {
-    this->currentTown = currentTown;
+void Monster::setCurrentLocation(shared_ptr<Location> currentLocation) {
+    this->currentLocation = currentLocation;
 }
 
 void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumber) {
-    auto currentTownCharacterExistence = currentTown->getCharacters();
-    if (!currentTownCharacterExistence.empty()) {
-        for (const auto& c : currentTownCharacterExistence) {
+    auto currentLocationCharacterExistence = currentLocation->getCharacters();
+    if (!currentLocationCharacterExistence.empty()) {
+        for (const auto& c : currentLocationCharacterExistence) {
             if (c == "Invisible man" || c == "Dracula") continue;
             return;
         }
-
     }
 
-    queue<shared_ptr<Town>> q;
-    unordered_map<string, shared_ptr<Town>> parent;
+    queue<shared_ptr<Location>> q;
     unordered_set<string> visited;
-    vector<shared_ptr<Town>> targets;
+    unordered_map<string, shared_ptr<Location>> parent;
 
-    q.push(currentTown);
-    visited.insert(currentTown->getName());
+    q.push(currentLocation);
+    visited.insert(currentLocation->getName());
 
-    bool found = false;
+    while (!q.empty()) {
+        auto current = q.front();
+        q.pop();
 
-    while (!q.empty() && !found) {
-        int levelSize = q.size();
-        for (int i = 0; i < levelSize; ++i) {
-            auto town = q.front();
-            q.pop();
+        for (const auto& neighbor : current->getNeighbors()) {
+            if (!neighbor) continue;
 
-            for (const auto& character : town->getCharacters()) {
-                if (character == "Invisible man") continue;
-            
-                if ((targetCharacter == "*" || character == targetCharacter) &&
-                    town != currentTown) {
-                    targets.push_back(town);
-                    found = true;
-                    break;
+            if (visited.find(neighbor->getName()) == visited.end()) {
+                visited.insert(neighbor->getName());
+                parent[neighbor->getName()] = current;
+                q.push(neighbor);
+
+                auto characters = neighbor->getCharacters();
+                for (const auto& character : characters) {
+                    if (character != monsterName) {
+                        vector<shared_ptr<Location>> path;
+                        auto step = neighbor;
+                        while (step && step != currentLocation) {
+                            path.push_back(step);
+                            step = parent[step->getName()];
+                        }
+                        path.push_back(currentLocation);
+
+                        shared_ptr<Location> newLocation;
+                        if (path.size() == 1) {
+                            newLocation = path.back();
+                        } else {
+                            newLocation = path[stepNumber];
+                        }
+
+                        currentLocation->removeCharacter(monsterName);
+                        newLocation->addCharacter(monsterName);
+                        setCurrentLocation(newLocation);
+                        cout << monsterName << " moved to " << newLocation->getName() << ".\n";
+                        return;
+                    }
                 }
             }
-
-            for (const auto& neighbor : town->getNeighbors()) {
-                if (!neighbor) continue;
-                if (visited.count(neighbor->getName())) continue;
-
-                visited.insert(neighbor->getName());
-                parent[neighbor->getName()] = town;
-                q.push(neighbor);
-            }
         }
-
-        if (found) break;
     }
-
-    if (targets.empty()) {
-        throw invalid_argument("There are no locations with characters.");
-    }
-
-    srand(static_cast<unsigned int>(time(nullptr)));
-    auto chosenTarget = targets[rand() % targets.size()];
-
-    vector<shared_ptr<Town>> path;
-    auto step = chosenTarget;
-    while (step && step != currentTown) {
-        path.push_back(step);
-        step = parent[step->getName()];
-    }
-    path.push_back(currentTown);
-    reverse(path.begin(), path.end());
-
-    shared_ptr<Town> newTown;
-    if (stepNumber >= path.size()) {
-        newTown = path.back();
-    } else {
-        newTown = path[stepNumber];
-    }
-
-    currentTown->removeCharacter(getMonsterName());
-    newTown->addCharacter(getMonsterName());
-    setCurrentTown(newTown);
 }
 
 

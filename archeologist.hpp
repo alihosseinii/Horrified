@@ -1,12 +1,13 @@
 #ifndef ARCHEOLOGIST_HPP
 #define ARCHEOLOGIST_HPP
 
+#include <string>
+#include <memory>
 #include "hero.hpp"
-#include <iostream>
 
 class Archeologist : public Hero {
 public:
-    Archeologist(const std::string& playerName, std::shared_ptr<Town> startingTown);
+    Archeologist(const std::string& playerName, std::shared_ptr<Location> startingLocation);
 
     void specialAction() override;
 };

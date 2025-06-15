@@ -119,18 +119,34 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
 
     auto characters = currentLocation->getCharacters();
     string answer;
+    bool characterExists = false;
     if (!characters.empty()) {
         for (const auto& character : characters) {
             if (character == "Archeologist" || character == "Mayor" || character == "Dracula" || character == "Invisible man") {
                 continue;
             }
+            characterExists = true;
+        }
+    }
 
+    if (characterExists) {
+        cin.ignore();
+        while (true) {
             cout << "Do you want to move villager(s) with yourself(Yes or No)? ";
-            cin.ignore();
             getline(cin, answer);
-            if (answer == "NO" || answer == "No" || answer == "no" || answer == "nO") break;
-            auto villager = villagerManager.getVillager(character);
-            villager->move(newLocation);
+            answer = toSentenceCase(answer);
+            if (answer == "No") break;
+            if (answer == "Yes") {
+                for (const auto& character : characters) {
+                    if (character == "Archeologist" || character == "Mayor" || character == "Dracula" || character == "Invisible man") {
+                        continue;
+                    }
+                    auto villager = villagerManager.getVillager(character);
+                    villager->move(newLocation);
+                }
+                break;
+            }
+            cout << "Invalid answer. Please try again" << endl;
         }
     }
 
@@ -139,7 +155,7 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
     setCurrentLocation(newLocation);
 
     cout << heroName << " (" << playerName << ") moved to " << currentLocation->getName() << ".\n";
-    setRemainingActions(getRemainingActions() - 1);
+    remainingActions--;
 }
 
 void Hero::guide(VillagerManager& villagerManager, Map& map) {
@@ -193,42 +209,53 @@ void Hero::guide(VillagerManager& villagerManager, Map& map) {
         villager->move(currentLocation);
     }
 
-    setRemainingActions(getRemainingActions() - 1);
+    remainingActions--;
 }
 
-void Hero::pickUp(ItemBag& itemBag) {
+void Hero::pickUp() {
     if (remainingActions <= 0) {
         throw invalid_argument("No remaining actions.");
     }
 
-    const auto& locationItems = currentLocation->getItems();
+    const auto locationItems = currentLocation->getItems();
     if (locationItems.empty()) {
         throw invalid_argument("No items to pick up in " + currentLocation->getName() + ".\n");
     }
 
     cout << "Items in " << currentLocation->getName() << ":\n";
-    for (size_t i = 0; i < locationItems.size(); ++i) {
+    for (size_t i = 0; i < static_cast<int>(locationItems.size()); ++i) {
         const auto& item = locationItems[i];
         cout << i + 1 << ". " << item.getItemName() << " (" 
              << Item::colorToString(item.getColor()) << ", Power: " 
              << item.getPower() << ")\n";
     }
 
-    cout << "Enter the number of the item to pick up: ";
     int choice;
-    cin >> choice;
-
-    if (choice > static_cast<int>(locationItems.size())) {
-        throw out_of_range("There are not " + to_string(choice) + " items in " + currentLocation->getName());
+    bool itemWasPickedUp = false;
+    int exitChoice = static_cast<int>(locationItems.size()) + 1;
+    while (true) {
+        cout << "Enter the number of the item to pick up (" << exitChoice << " to exit): ";
+        cin >> choice;
+        if (choice > exitChoice || choice <= 0) {
+            cout << "Invalid answer. Please try again." << endl;
+            continue;
+        }
+        else if (choice == exitChoice) {
+            break;
+        }
+        else {
+            itemWasPickedUp = true;
+        }
+        const Item& selectedItem = locationItems.at(choice - 1);
+        items.emplace_back(selectedItem);
+        currentLocation->removeItem(selectedItem);
+        cout << playerName << " (" << heroName << ") picked up " 
+             << selectedItem.getItemName() << ".\n";
     }
 
-    const Item& selectedItem = locationItems[choice - 1];
-    items.emplace_back(selectedItem);
-    currentLocation->removeItem(selectedItem);
-    cout << playerName << " (" << heroName << ") picked up " 
-         << selectedItem.getItemName() << ".\n";
-
-    remainingActions--;
+    if (itemWasPickedUp) {
+        remainingActions--;
+    }
 }
 
 // void Hero::advance() {

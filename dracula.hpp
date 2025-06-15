@@ -4,9 +4,13 @@
 #include "monster.hpp"
 
 class Dracula : public Monster {
-public:
-    Dracula(std::shared_ptr<Town> startingTown);
+private:
+std::string powerName;
 
+public:
+    Dracula(std::shared_ptr<Location> startingLocation);
+
+    void power(Hero* hero) override;
 };
 
 #endif

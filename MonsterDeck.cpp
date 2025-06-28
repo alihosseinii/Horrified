@@ -4,7 +4,9 @@
 #include <ctime>
 #include <iostream>
 
-MonsterDeck::MonsterDeck() {
+
+
+  MonsterDeck::MonsterDeck() {
     initializeDefaultCards();
     shuffle();
 }
@@ -12,43 +14,42 @@ MonsterDeck::MonsterDeck() {
 void MonsterDeck::initializeDefaultCards() {
     cards.clear();
 
-    cards.emplace_back(MonsterCard(2, "Move Dracula to hero location.", {
+    cards.emplace_back(MonsterCard("Form of The Bat",2, "Move Dracula to hero location.", {
         {MonsterType::InvisibleMan, 1, 2}, {MonsterType::FrenziedMonster, 1, 2}
     }));
 
-    cards.emplace_back(MonsterCard(0, "Place Dracula in Crypt.", {
+    cards.emplace_back(MonsterCard("Sunrice",0, "Place Dracula in Crypt.", {
         {MonsterType::InvisibleMan, 1, 2}, {MonsterType::FrenziedMonster, 1, 2}
     }));
 
-    cards.emplace_back(MonsterCard(3, "Place Wilbur & Chick in Docks.", {
+    cards.emplace_back(MonsterCard("The Delivery",3, "Place Wilbur & Chick in Docks.", {
         {MonsterType::FrenziedMonster, 1, 3}
     }));
 
-    cards.emplace_back(MonsterCard(3, "Place Dr. Cranly in Laboratory.", {
+    cards.emplace_back(MonsterCard("Former Employer", 3, "Place Dr. Cranly in Laboratory.", {
         {MonsterType::InvisibleMan, 1, 2}, {MonsterType::FrenziedMonster, 1, 2}
     }));
 
-    cards.emplace_back(MonsterCard(3, "Place Fritz in Tower.", {
+    cards.emplace_back(MonsterCard("Hurried Assistant", 3, "Place Fritz in Tower.", {
         {MonsterType::Dracula, 2, 3}
     }));
 
-    cards.emplace_back(MonsterCard(3, "Place Maria in Barn.", {
+    cards.emplace_back(MonsterCard("The Innocent", 3, "Place Maria in Barn.", {
         {MonsterType::FrenziedMonster, 1, 3}, {MonsterType::Dracula, 1, 3}, {MonsterType::InvisibleMan, 1, 3}
     }));
 
-    cards.emplace_back(MonsterCard(3, "Place Prof. Pearson in Cave.", {
+    cards.emplace_back(MonsterCard("Egyptian Expert", 3, "Place Prof. Pearson in Cave.", {
         {MonsterType::Dracula, 2, 2}, {MonsterType::FrenziedMonster, 1, 2}
     }));
 
-    cards.emplace_back(MonsterCard(3, "Place Dr. Read in Institute.", {
+    cards.emplace_back(MonsterCard("The Ichthyologist", 3, "Place Dr. Read in Institute.", {
+        {MonsterType::FrenziedMonster, 1, 2}
+    }));
+    cards.emplace_back(MonsterCard("Fortune Teller", 3, "Place Maleva in Camp.", {
         {MonsterType::FrenziedMonster, 1, 2}
     }));
 
-    cards.emplace_back(MonsterCard(3, "Place Maleva in Camp.", {
-        {MonsterType::FrenziedMonster, 1, 2}
-    }));
-
-    cards.emplace_back(MonsterCard(2, "Move Invisible Man to location with most items and remove all items there.", {
+    cards.emplace_back(MonsterCard("Thief", 2, "Move Invisible Man to location with most items and remove all items there.", {
         {MonsterType::InvisibleMan, 1, 3}, {MonsterType::Dracula, 1, 3}
     }));
 

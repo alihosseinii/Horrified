@@ -2,19 +2,17 @@
 #define FRENZYMARKER_HPP
 
 #include <vector>
-#include "Monster.h"
+#include "Monster.hpp"
 
 class FrenzyMarker {
 private:
     Monster* currentFrenzied;
-    std::vector<Monster*> monsterOrder;
+    vector<Monster*> monsterOrder;
 
 public:
-    FrenzyMarker(const std::vector<Monster*>& allMonsters);
+    FrenzyMarker(Monster* dracula, Monster* invisibleMan);
 
     Monster* getCurrentFrenzied() const;
-    void advance();
-    void reset();  
+    void advance(Monster* dracula, Monster* invisibleMan); 
 };
-
 #endif

@@ -11,6 +11,8 @@
 #include "perkcard.hpp"
 
 class PerkDeck;
+class InvisibleMan;
+class Dracula;
 
 std::string toSentenceCase(std::string name);
 
@@ -39,6 +41,10 @@ public:
     void addPerkCard(const PerkCard& card);
     const std::vector<PerkCard>& getPerkCards() const;
     void displayPerkCards() const;
+    bool usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck = nullptr, InvisibleMan* invisibleMan = nullptr, ItemBag* itemBag = nullptr, Hero* otherHero = nullptr, Dracula* dracula = nullptr);
+    void removePerkCard(size_t index);
+    bool shouldSkipNextMonsterPhase() const;
+    void setSkipNextMonsterPhase(bool skip);
 
     std::shared_ptr<Location> getCurrentLocation() const;
     void setCurrentLocation(std::shared_ptr<Location> currentLocation);
@@ -51,6 +57,7 @@ protected:
     std::string playerName;
     int maxActions;
     int remainingActions;
+    bool skipNextMonsterPhase;
 
     void setHeroName(std::string heroName);
     void setPlayerName(std::string playerName);

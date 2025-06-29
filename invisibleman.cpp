@@ -3,6 +3,9 @@
 #include "terrorteracker.hpp"
 #include <iostream>
 #include <algorithm>
+#include <queue>
+#include <unordered_set>
+#include <unordered_map>
 
 using namespace std;
 
@@ -22,24 +25,35 @@ void InvisibleMan::power(Hero* hero, TerrorTracker& terrorTracker) {
             return;
         }
     }
+}
 
-    queue<pair<shared_ptr<Location>, int>> q;
-    unordered_set<string> visited;
-    unordered_map<string, shared_ptr<Location>> parent;
+void InvisibleMan::moveTowardsVillager(int steps) {
+    auto currentLocationCharacterExistence = currentLocation->getCharacters();
+    for (const auto& c : currentLocationCharacterExistence) {
+        if (c != "Invisible man" && c != "Dracula" && c != "Archeologist" && c != "Mayor") {
+            return;
+        }
+    }
 
-    q.push({currentLocation, 0});
-    visited.insert(currentLocation->getName());
+    for (int step = 0; step < steps; ++step) {
+        queue<pair<shared_ptr<Location>, int>> q;
+        unordered_set<string> visited;
+        unordered_map<string, shared_ptr<Location>> parent;
 
-    while (!q.empty()) {
-        auto [current, distance] = q.front();
-        q.pop();
+        q.push({currentLocation, 0});
+        visited.insert(currentLocation->getName());
 
-        if (distance > 2) continue;
+        shared_ptr<Location> targetLocation = nullptr;
 
-        auto characters = current->getCharacters();
-        for (const auto& character : characters) {
-            if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
-                if (distance == 2) {
+        while (!q.empty()) {
+            auto [current, distance] = q.front();
+            q.pop();
+
+            if (distance > 2) continue;
+
+            auto characters = current->getCharacters();
+            for (const auto& character : characters) {
+                if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
                     vector<shared_ptr<Location>> path;
                     auto step = current;
                     while (step && step != currentLocation) {
@@ -49,24 +63,38 @@ void InvisibleMan::power(Hero* hero, TerrorTracker& terrorTracker) {
                     reverse(path.begin(), path.end());
 
                     if (!path.empty()) {
-                        auto newLocation = path.front();
-                        currentLocation->removeCharacter(monsterName);
-                        newLocation->addCharacter(monsterName);
-                        setCurrentLocation(newLocation);
-                        cout << monsterName << " moved to " << newLocation->getName() << ".\n";
+                        targetLocation = path.front();
                     }
-                    return;
+                    break;
                 }
+            }
+
+            if (targetLocation) break;
+
+            for (const auto& neighbor : current->getNeighbors()) {
+                if (!neighbor) continue;
+                if (visited.find(neighbor->getName()) != visited.end()) continue;
+
+                visited.insert(neighbor->getName());
+                parent[neighbor->getName()] = current;
+                q.push({neighbor, distance + 1});
             }
         }
 
-        for (const auto& neighbor : current->getNeighbors()) {
-            if (!neighbor) continue;
-            if (visited.find(neighbor->getName()) != visited.end()) continue;
+        if (targetLocation) {
+            currentLocation->removeCharacter(monsterName);
+            targetLocation->addCharacter(monsterName);
+            setCurrentLocation(targetLocation);
+            cout << monsterName << " moved to " << targetLocation->getName() << ".\n";
 
-            visited.insert(neighbor->getName());
-            parent[neighbor->getName()] = current;
-            q.push({neighbor, distance + 1});
+            auto newLocationCharacters = targetLocation->getCharacters();
+            for (const auto& character : newLocationCharacters) {
+                if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
+                    return;
+                }
+            }
+        } else {
+            break;
         }
     }
 }

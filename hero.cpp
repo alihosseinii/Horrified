@@ -1,4 +1,8 @@
 #include "hero.hpp"
+#include "villagermanager.hpp"
+#include "perkdeck.hpp"
+#include "invisibleman.hpp"
+#include "dracula.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
@@ -38,6 +42,7 @@ Hero::Hero(const string& playerName, const string& heroName, int maxActions, sha
     setMaxActions(maxActions);
     setRemainingActions(maxActions);
     setCurrentLocation(startingLocation);
+    skipNextMonsterPhase = false;
     currentLocation->addCharacter(heroName);
 }
 
@@ -289,11 +294,147 @@ void Hero::displayPerkCards() const {
     }
 }
 
+bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck, InvisibleMan* invisibleMan, ItemBag* itemBag, Hero* otherHero, Dracula* dracula) {
+    if (index >= perkCards.size()) {
+        cout << "Invalid perk card index.\n";
+        return false;
+    }
+
+    PerkCard card = perkCards[index];
+    PerkType type = card.getType();
+    
+    cout << playerName << " (" << heroName << ") uses " << PerkCard::perkTypeToString(type) << "!\n";
+    
+    switch (type) {
+        case PerkType::VisitFromTheDetective: {
+            cout << "Choose a location to place the Invisible Man: ";
+            string locationName;
+            getline(cin, locationName);
+            locationName = toSentenceCase(locationName);
+            
+            try {
+                auto targetLocation = map.getLocation(locationName);
+                
+                if (invisibleMan != nullptr) {
+                    auto currentLocation = invisibleMan->getCurrentLocation();
+                    currentLocation->removeCharacter("Invisible man");
+                    invisibleMan->setCurrentLocation(targetLocation);
+                    targetLocation->addCharacter("Invisible man");
+                } else {
+                    cout << "Invisible Man is dead.\n";
+                    return false;
+                }
+            } catch (const exception& e) {
+                cout << "Invalid location: " << e.what() << "\n";
+                return false;
+            }
+            break;
+        }
+        
+        case PerkType::BreakOfDawn: {
+            setSkipNextMonsterPhase(true);
+
+            if (itemBag != nullptr) {
+                try {
+                    itemBag->drawRandomItem(map);
+                    itemBag->drawRandomItem(map);
+                    cout << "Two items were added!\n";
+                } catch (const exception& e) {
+                    cout << e.what() << endl;
+                }
+            }
+            break;
+        }
+        
+        case PerkType::Overstock: {
+            if (itemBag != nullptr) {
+                try {
+                    itemBag->drawRandomItem(map);
+                    itemBag->drawRandomItem(map);
+                    cout << "Two items were added!\n";
+                } catch (const exception& e) {
+                    cout << e.what() << endl;
+                }
+            }
+            break;
+        }
+        
+        case PerkType::LateIntoTheNight: {
+            cout << "You gain 2 additional actions!\n";
+            remainingActions += 2;
+            break;
+        }
+        
+        case PerkType::Repel: {
+            cout << "Each monster moves 2 locations.\n";
+            
+            if (dracula != nullptr) {
+                dracula->moveToNearestCharacter("*", 2);
+            }
+            
+            if (invisibleMan != nullptr) {
+                invisibleMan->moveToNearestCharacter("*", 2);
+            }
+            break;
+        }
+        
+        case PerkType::Hurry: {
+            cout << "Each hero moves 2 locations.\n";
+            
+            auto neighbors = currentLocation->getNeighbors();
+            if (!neighbors.empty()) {
+                auto firstNeighbor = neighbors[0];
+                auto secondNeighbors = firstNeighbor->getNeighbors();
+                if (!secondNeighbors.empty()) {
+                    auto secondNeighbor = secondNeighbors[0];
+                    currentLocation->removeCharacter(heroName);
+                    secondNeighbor->addCharacter(heroName);
+                    setCurrentLocation(secondNeighbor);
+                }
+            }
+            
+            if (otherHero != nullptr) {
+                auto otherLocation = otherHero->getCurrentLocation();
+                auto otherNeighbors = otherLocation->getNeighbors();
+                if (!otherNeighbors.empty()) {
+                    auto otherFirstNeighbor = otherNeighbors[0];
+                    auto otherSecondNeighbors = otherFirstNeighbor->getNeighbors();
+                    if (!otherSecondNeighbors.empty()) {
+                        auto otherSecondNeighbor = otherSecondNeighbors[0];
+                        otherLocation->removeCharacter(otherHero->getHeroName());
+                        otherSecondNeighbor->addCharacter(otherHero->getHeroName());
+                        otherHero->setCurrentLocation(otherSecondNeighbor);
+                    }
+                }
+            }
+            break;
+        }
+    }
+    
+    removePerkCard(index);
+    return true;
+}
+
+void Hero::removePerkCard(size_t index) {
+    if (index >= perkCards.size()) {
+        throw out_of_range("Perk card index out of range");
+    }
+    perkCards.erase(perkCards.begin() + index);
+}
+
 void Hero::removeItem(size_t index) {
     if (index >= items.size()) {
         throw out_of_range("Item index out of range");
     }
     items.erase(items.begin() + index);
+}
+
+bool Hero::shouldSkipNextMonsterPhase() const {
+    return skipNextMonsterPhase;
+}
+
+void Hero::setSkipNextMonsterPhase(bool skip) {
+    skipNextMonsterPhase = skip;
 }
 
 

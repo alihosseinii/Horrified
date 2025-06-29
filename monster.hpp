@@ -9,14 +9,19 @@
 #include <unordered_map>
 #include "location.hpp"
 #include "hero.hpp"
+#include "archeologist.hpp"
+#include "mayor.hpp"
+
+class TerrorTracker;
+class Map;
 
 class Monster {
 public:
     Monster(const std::string& monsterName, std::shared_ptr<Location> startingLocation);
     virtual ~Monster() = default;
 
-    // virtual void attack() = 0;
-    virtual void power(Hero* hero) = 0;
+    virtual void power(Hero* hero, TerrorTracker& terrorTracker) = 0;
+    bool attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTracker, Map& map);
 
     std::string getMonsterName() const;
     std::shared_ptr<Location> getCurrentLocation() const;

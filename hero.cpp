@@ -92,7 +92,7 @@ vector<Item> Hero::getItems() const {
     return items;
 }
 
-void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManager) {
+void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManager, PerkDeck* perkDeck) {
     if (remainingActions <= 0) {
         throw invalid_argument("No remaining actions.");
     }
@@ -142,7 +142,7 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
                         continue;
                     }
                     auto villager = villagerManager.getVillager(character);
-                    villager->move(newLocation);
+                    villager->move(newLocation, this, perkDeck);
                 }
                 break;
             }
@@ -158,7 +158,7 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
     remainingActions--;
 }
 
-void Hero::guide(VillagerManager& villagerManager, Map& map) {
+void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck) {
     if (remainingActions <= 0) {
         throw invalid_argument("No remaining actions.");
     }
@@ -201,12 +201,12 @@ void Hero::guide(VillagerManager& villagerManager, Map& map) {
         chosenLocation = toSentenceCase(chosenLocation);
         auto villager = villagerManager.getVillager(chosenVillager);
         auto location = map.getLocation(chosenLocation);
-        villager->move(location);
+        villager->move(location, this, perkDeck);
     }
 
     if (villagerExistInNeighborLocation) {
         auto villager = villagerManager.getVillager(chosenVillager);
-        villager->move(currentLocation);
+        villager->move(currentLocation, this, perkDeck);
     }
 
     remainingActions--;
@@ -268,21 +268,32 @@ void Hero::pickUp() {
 //     remainingActions--;
 // }
 
+void Hero::addPerkCard(const PerkCard& card) {
+    perkCards.push_back(card);
+}
 
-// void Hero::addItem(const Item& item) {
-//     inventory.push_back(item);
-// }
+const std::vector<PerkCard>& Hero::getPerkCards() const {
+    return perkCards;
+}
 
-// const std::vector<Item>& Hero::getItems() const {
-//     return inventory;
-// }
+void Hero::displayPerkCards() const {
+    if (perkCards.empty()) {
+        cout << playerName << " (" << heroName << ") has no perk cards.\n";
+        return;
+    }
+    
+    cout << playerName << " (" << heroName << ") has " << perkCards.size() << " perk card(s):\n";
+    for (size_t i = 0; i < perkCards.size(); ++i) {
+        cout << i + 1 << ". " << PerkCard::perkTypeToString(perkCards[i].getType()) 
+             << ": " << perkCards[i].getDescription() << "\n";
+    }
+}
 
-// void Hero::addPerkCard(const PerkCard& card) {
-//     perkCards.push_back(card);
-// }
-
-// const std::vector<PerkCard>& Hero::getPerkCards() const {
-//     return perkCards;
-// }
+void Hero::removeItem(size_t index) {
+    if (index >= items.size()) {
+        throw out_of_range("Item index out of range");
+    }
+    items.erase(items.begin() + index);
+}
 
 

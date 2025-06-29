@@ -221,8 +221,10 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
     
 
     bool monsterPhaseEnding = false;
+    int invisibleManPowerDice = 0;
+    
     for (size_t i = 0; i < monsterCard.getStrikeList().size(); ++i) {
-        if (monsterPhaseEnding) return;
+        if (monsterPhaseEnding) break;
         Strike strike = monsterCard.getStrikeList().at(i);
         Monster* monster = nullptr;
         switch (strike.monster) {
@@ -250,13 +252,28 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
             
             if (face == "!") {
                 if (monster != nullptr) {
-                    int terrorBefore = terrorTracker.getLevel();
-                    monster->power(hero, terrorTracker);
-                    int terrorAfter = terrorTracker.getLevel();
-                    
-                    if (terrorAfter > terrorBefore) {
-                        monsterPhaseEnding = true;
-                        return;
+                    if (strike.monster == MonsterType::InvisibleMan) {
+                        int terrorBefore = terrorTracker.getLevel();
+                        monster->power(hero, terrorTracker);
+                        int terrorAfter = terrorTracker.getLevel();
+                        
+                        if (terrorAfter == terrorBefore) {
+                            invisibleManPowerDice++;
+                        } else {
+                            if (terrorAfter > terrorBefore) {
+                                monsterPhaseEnding = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        int terrorBefore = terrorTracker.getLevel();
+                        monster->power(hero, terrorTracker);
+                        int terrorAfter = terrorTracker.getLevel();
+                        
+                        if (terrorAfter > terrorBefore) {
+                            monsterPhaseEnding = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -265,12 +282,17 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                 if (monster != nullptr) {
                     if (monster->attack(archeologist, mayor, terrorTracker, map)) {
                         monsterPhaseEnding = true;
-                        return;
+                        break;
                     }
                 }
             } 
         }
-    } 
+    }
+    
+    if (invisibleManPowerDice > 0) {
+        int totalSteps = invisibleManPowerDice * 2;
+        invisibleMan->moveTowardsVillager(totalSteps);
+    }
 }
 
 void MonsterManager::moveVillagersCloserToSafePlaces(Map& map, VillagerManager& villagerManager) {

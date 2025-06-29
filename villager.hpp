@@ -4,21 +4,26 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "town.hpp"
+#include "location.hpp"
+
+class Hero;
+class PerkDeck;
 
 class Villager {
 public:
-    Villager(const std::string& name, std::shared_ptr<Town> startingTown);
+    Villager(const std::string& name, std::shared_ptr<Location> startingLocation);
 
     std::string getVillagerName() const;
     void setVillagerName(std::string villagerName);
-    std::shared_ptr<Town> getCurrentTown() const;
-    void setCurrentTown(std::shared_ptr<Town> currentTown);
+    std::shared_ptr<Location> getCurrentLocation() const;
+    void setCurrentLocation(std::shared_ptr<Location> currentLocation);
 
-    void move(std::shared_ptr<Town> newTown);
+    void move(std::shared_ptr<Location> newLocation, Hero* guidingHero = nullptr, PerkDeck* perkDeck = nullptr);
+    void moveByMonster(std::shared_ptr<Location> newLocation);
+    void checkSafePlace();
 private:
     std::string villagerName;
-    std::shared_ptr<Town> currentTown;
+    std::shared_ptr<Location> currentLocation;
 };
 
 #endif

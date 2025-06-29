@@ -2,6 +2,8 @@
 #include "location.hpp"
 #include <iostream>
 #include <algorithm>
+#include <queue>
+#include <unordered_set>
 
 using namespace std;
 
@@ -105,4 +107,65 @@ shared_ptr<Location> Map::getLocation(const std::string& locationName) const {
         return it->second;
     }
     throw invalid_argument(locationName + " doesn't exist.");
+}
+
+shared_ptr<Location> Map::getLocationWithMostItems() const {
+    shared_ptr<Location> locationWithMostItems = nullptr;
+    size_t maxItemCount = 0;
+    
+    for (const auto& [name, location] : locations) {
+        size_t currentItemCount = location->getItems().size();
+        if (currentItemCount > maxItemCount) {
+            maxItemCount = currentItemCount;
+            locationWithMostItems = location;
+        }
+    }
+    
+    return locationWithMostItems;
+}
+
+int Map::calculateDistance(shared_ptr<Location> from, shared_ptr<Location> to) const {
+    if (from == to) return 0;
+    
+    queue<pair<shared_ptr<Location>, int>> q;
+    unordered_set<string> visited;
+    
+    q.push({from, 0});
+    visited.insert(from->getName());
+    
+    while (!q.empty()) {
+        auto [current, distance] = q.front();
+        q.pop();
+        
+        if (current == to) {
+            return distance;
+        }
+        
+        for (const auto& neighbor : current->getNeighbors()) {
+            if (visited.find(neighbor->getName()) == visited.end()) {
+                visited.insert(neighbor->getName());
+                q.push({neighbor, distance + 1});
+            }
+        }
+    }
+    
+    return 50;
+}
+
+shared_ptr<Location> Map::findCloserLocation(shared_ptr<Location> current, shared_ptr<Location> target) const {
+    if (current == target) return nullptr;
+    
+    int currentDistance = calculateDistance(current, target);
+    shared_ptr<Location> bestLocation = nullptr;
+    int bestDistance = currentDistance;
+    
+    for (const auto& neighbor : current->getNeighbors()) {
+        int neighborDistance = calculateDistance(neighbor, target);
+        if (neighborDistance < bestDistance) {
+            bestDistance = neighborDistance;
+            bestLocation = neighbor;
+        }
+    }
+    
+    return bestLocation;
 }

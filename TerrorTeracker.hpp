@@ -4,8 +4,6 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-
 class TerrorTracker {
 private:
     int level;
@@ -15,11 +13,10 @@ public:
 
     void reset();
     void increase();  
-    void increase(int n);
     int getLevel() const;
 
-    bool isMax() const;
-    string getStatus() const;
+    bool lost() const;
+    std::string getStatus() const;
 };
 
 #endif 

@@ -4,7 +4,7 @@
 #include <string>
 
 enum class PerkType {
-    VisitFromDetective,
+    VisitFromTheDetective,
     BreakOfDawn,
     Overstock,
     LateIntoTheNight,

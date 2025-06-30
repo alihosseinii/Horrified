@@ -1,9 +1,11 @@
 #include <iostream>
 #include "PerkCard.hpp"
 
+using namespace std;
+
 PerkCard::PerkCard(PerkType type) : type(type) {
     switch (type) {
-        case PerkType::VisitFromDetective:
+        case PerkType::VisitFromTheDetective:
             description = "place the invisible man in a desired location";
             break;
         case PerkType::BreakOfDawn:

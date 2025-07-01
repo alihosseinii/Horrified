@@ -160,7 +160,7 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
                     
                     targetHero->removeItem(choice - 1);
                     
-                    return true;
+                    return false;
                 }
             } else {
                 cout << "You have no items to use!\n";
@@ -191,4 +191,6 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
         
         return true;
     }
+    
+    return false;
 }

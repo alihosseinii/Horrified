@@ -52,17 +52,26 @@ string TUI::askForLocationName() {
     getline(cin, name);
     return name;
 }
-
-void TUI::showMapASCII() {
-    cout << "\n============= ASCII MAP =============\n";
-    cout << "Lab ─── Castle ─── Crib\n";
-    cout << "  │         │\n";
-    cout << "Hospital   Camp\n";
-    cout << "  │         │\n";
-    cout << "Barn ───── Mansion\n";
-    cout << "Dungeon\n";
-    cout << "====================================\n";
+void TUI::showMap() {
+    std::cout << "\n========== MAP ==========\n";
+    std::cout << "          Laboratory\n";
+    std::cout << "               │\n";
+    std::cout << "  Camp ─── Tower ─── Dungeon\n";
+    std::cout << "   │         │         │\n";
+    std::cout << "Barn ─── Mansion ─── Crypt\n";
+    std::cout << "   │         │         │\n";
+    std::cout << "  Church ── Graveyard ── Cave\n";
+    std::cout << "     │                   │\n";
+    std::cout << "  Hospital           Lagoon\n";
+    std::cout << "     │                   │\n";
+    std::cout << "   Inn ───── Docks ───── Shop\n";
+    std::cout << "     │         │         │\n";
+    std::cout << "  Station ─── Theater ─── Precinct\n";
+    std::cout << "                      │\n";
+    std::cout << "                  Institute\n";
+    std::cout << "===========================\n";
 }
+
 
 void TUI::showLocationOverview(const vector<Location*>& locations) {
     cout << "\n========= Location Overview =========\n";

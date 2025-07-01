@@ -9,6 +9,7 @@
 #include "villagermanager.hpp"
 #include "item.hpp"
 #include "perkcard.hpp"
+#include "TaskBoard.hpp"
 
 class PerkDeck;
 class InvisibleMan;
@@ -24,8 +25,8 @@ public:
     virtual void move(std::shared_ptr<Location> newLocation, VillagerManager& villagerManager, PerkDeck* perkDeck = nullptr);
     virtual void guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck = nullptr);
     virtual void pickUp();
-    // virtual void advance();
-    // virtual void defeat();
+    virtual void advance(Dracula& dracula, TaskBoard& taskBoard);
+    virtual void defeat(Dracula& dracula, TaskBoard& taskBoard);
     virtual void specialAction() = 0; 
 
     const std::string& getHeroName() const;

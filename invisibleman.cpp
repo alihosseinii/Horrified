@@ -35,66 +35,60 @@ void InvisibleMan::moveTowardsVillager(int steps) {
         }
     }
 
-    for (int step = 0; step < steps; ++step) {
-        queue<pair<shared_ptr<Location>, int>> q;
-        unordered_set<string> visited;
-        unordered_map<string, shared_ptr<Location>> parent;
+    queue<pair<shared_ptr<Location>, int>> q;
+    unordered_set<string> visited;
+    unordered_map<string, shared_ptr<Location>> parent;
 
-        q.push({currentLocation, 0});
-        visited.insert(currentLocation->getName());
+    q.push({currentLocation, 0});
+    visited.insert(currentLocation->getName());
 
-        shared_ptr<Location> targetLocation = nullptr;
+    shared_ptr<Location> villagerLocation = nullptr;
 
-        while (!q.empty()) {
-            auto [current, distance] = q.front();
-            q.pop();
+    while (!q.empty()) {
+        auto [current, distance] = q.front();
+        q.pop();
 
-            if (distance > 2) continue;
-
-            auto characters = current->getCharacters();
-            for (const auto& character : characters) {
-                if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
-                    vector<shared_ptr<Location>> path;
-                    auto step = current;
-                    while (step && step != currentLocation) {
-                        path.push_back(step);
-                        step = parent[step->getName()];
-                    }
-                    reverse(path.begin(), path.end());
-
-                    if (!path.empty()) {
-                        targetLocation = path.front();
-                    }
-                    break;
-                }
-            }
-
-            if (targetLocation) break;
-
-            for (const auto& neighbor : current->getNeighbors()) {
-                if (!neighbor) continue;
-                if (visited.find(neighbor->getName()) != visited.end()) continue;
-
-                visited.insert(neighbor->getName());
-                parent[neighbor->getName()] = current;
-                q.push({neighbor, distance + 1});
+        auto characters = current->getCharacters();
+        for (const auto& character : characters) {
+            if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
+                villagerLocation = current;
+                break;
             }
         }
+        if (villagerLocation) break;
 
-        if (targetLocation) {
-            currentLocation->removeCharacter(monsterName);
-            targetLocation->addCharacter(monsterName);
-            setCurrentLocation(targetLocation);
-            cout << monsterName << " moved to " << targetLocation->getName() << ".\n";
+        for (const auto& neighbor : current->getNeighbors()) {
+            if (!neighbor) continue;
+            if (visited.find(neighbor->getName()) != visited.end()) continue;
 
-            auto newLocationCharacters = targetLocation->getCharacters();
-            for (const auto& character : newLocationCharacters) {
-                if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
-                    return;
-                }
+            visited.insert(neighbor->getName());
+            parent[neighbor->getName()] = current;
+            q.push({neighbor, distance + 1});
+        }
+    }
+
+    if (!villagerLocation) return;
+
+    vector<shared_ptr<Location>> path;
+    auto stepLoc = villagerLocation;
+    while (stepLoc && stepLoc != currentLocation) {
+        path.push_back(stepLoc);
+        stepLoc = parent[stepLoc->getName()];
+    }
+    reverse(path.begin(), path.end());
+
+    int moveCount = min(steps, static_cast<int>(path.size()));
+    for (int i = 0; i < moveCount; ++i) {
+        currentLocation->removeCharacter(monsterName);
+        path[i]->addCharacter(monsterName);
+        setCurrentLocation(path[i]);
+        cout << monsterName << " moved to " << path[i]->getName() << ".\n";
+
+        auto newLocationCharacters = path[i]->getCharacters();
+        for (const auto& character : newLocationCharacters) {
+            if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
+                return;
             }
-        } else {
-            break;
         }
     }
 }

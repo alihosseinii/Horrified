@@ -248,30 +248,17 @@ void Hero::pickUp() {
         else if (choice == exitChoice) {
             break;
         }
-        else {
-            itemWasPickedUp = true;
-        }
-        const Item& selectedItem = locationItems.at(choice - 1);
-        items.emplace_back(selectedItem);
+        const auto& selectedItem = locationItems[choice - 1];
+        items.push_back(selectedItem);
         currentLocation->removeItem(selectedItem);
-        cout << playerName << " (" << heroName << ") picked up " 
-             << selectedItem.getItemName() << ".\n";
+        cout << playerName << " (" << heroName << ") picked up " << selectedItem.getItemName() << ".\n";
+        itemWasPickedUp = true;
     }
 
     if (itemWasPickedUp) {
         remainingActions--;
     }
 }
-
-// void Hero::advance() {
-//     cout << name << " attempts to advance mission.\n";
-//     remainingActions--;
-// }
-
-// void Hero::defeat() {
-//     std::cout << name << " attempts to defeat monster.\n";
-//     remainingActions--;
-// }
 
 void Hero::addPerkCard(const PerkCard& card) {
     perkCards.push_back(card);
@@ -320,13 +307,14 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
                     currentLocation->removeCharacter("Invisible man");
                     invisibleMan->setCurrentLocation(targetLocation);
                     targetLocation->addCharacter("Invisible man");
+                    cout << "Invisible man moved to " << targetLocation->getName() << ".\n";
                 } else {
                     cout << "Invisible Man is dead.\n";
-                    return false;
+                    break;
                 }
             } catch (const exception& e) {
                 cout << "Invalid location: " << e.what() << "\n";
-                return false;
+                break;
             }
             break;
         }
@@ -368,11 +356,11 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
         case PerkType::Repel: {
             cout << "Each monster moves 2 locations.\n";
             
-            if (dracula != nullptr) {
+            if (dracula != nullptr && dracula->getCurrentLocation() != nullptr) {
                 dracula->moveToNearestCharacter("*", 2);
             }
             
-            if (invisibleMan != nullptr) {
+            if (invisibleMan != nullptr && invisibleMan->getCurrentLocation() != nullptr) {
                 invisibleMan->moveToNearestCharacter("*", 2);
             }
             break;
@@ -436,5 +424,173 @@ bool Hero::shouldSkipNextMonsterPhase() const {
 void Hero::setSkipNextMonsterPhase(bool skip) {
     skipNextMonsterPhase = skip;
 }
+
+void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
+    if (remainingActions <= 0) {
+        throw invalid_argument("No remaining actions.");
+    }
+
+    if (currentLocation->getName() == "Precinct") {
+        vector<string> clueLocations = {"Inn", "Barn", "Institute", "Laboratory", "Mansion"};
+        vector<pair<size_t, Item>> eligibleClues;
+        for (size_t i = 0; i < items.size(); ++i) {
+            string itemLoc = items[i].getLocation() ? items[i].getLocation()->getName() : "";
+            for (const auto& clueLoc : clueLocations) {
+                if (itemLoc == clueLoc && !taskBoard.isClueDelivered(clueLoc)) {
+                    eligibleClues.push_back({i, items[i]});
+                }
+            }
+        }
+        if (eligibleClues.empty()) {
+            throw invalid_argument("You have no eligible clue items to deliver at the Precinct.");
+        }
+        cout << "Choose an item to use against Invisible man:\n";
+        for (size_t i = 0; i < eligibleClues.size(); ++i) {
+            cout << i + 1 << ". " << eligibleClues[i].second.getItemName() << " (from " << eligibleClues[i].second.getLocation()->getName() << ")\n";
+        }
+        int choice;
+        cout << "Enter your choice: ";
+        cin >> choice;
+        cin.ignore();
+        if (choice > 0 && choice <= static_cast<int>(eligibleClues.size())) {
+            const auto& selected = eligibleClues[choice - 1];
+            taskBoard.deliverClue(selected.second.getLocation()->getName());
+            cout << playerName << "(" << heroName << ") delivered " << selected.second.getItemName() << " from " << selected.second.getLocation()->getName() << " to the Invisible Man's mat.\n";
+            removeItem(selected.first);
+            remainingActions--;
+            return;
+        } else {
+            cout << "Invalid choice.\n";
+            return;
+        }
+    }
+
+    if (!taskBoard.isCoffinLocation(currentLocation->getName())) {
+        throw invalid_argument("There is no coffin at this location.");
+    }
+    if (taskBoard.isCoffinDestroyed(currentLocation->getName())) {
+        throw invalid_argument("The coffin at this location has already been destroyed.");
+    }
+    vector<pair<size_t, Item>> redItems;
+    for (size_t i = 0; i < items.size(); ++i) {
+        if (items[i].getColor() == ItemColor::Red) {
+            redItems.push_back({i, items[i]});
+        }
+    }
+    if (redItems.empty()) {
+        throw invalid_argument("You have no red items to use.");
+    }
+    cout << "Choose a red item to use:\n";
+    for (size_t i = 0; i < redItems.size(); ++i) {
+        cout << i + 1 << ". " << redItems[i].second.getItemName() << " (Power: " << redItems[i].second.getPower() << ")\n";
+    }
+    int choice;
+    cout << "Enter your choice: ";
+    cin >> choice;
+    cin.ignore();
+    if (choice > 0 && choice <= static_cast<int>(redItems.size())) {
+        const auto& selectedItem = redItems[choice - 1];
+        taskBoard.addStrengthToCoffin(currentLocation->getName(), selectedItem.second.getPower());
+        cout << playerName << "(" << heroName << ") used " << selectedItem.second.getItemName() << " on the coffin at " << currentLocation->getName() << ".\n";
+        removeItem(selectedItem.first);
+        remainingActions--;
+        return;
+    } else {
+        cout << "Invalid choice.\n";
+        return;
+    }
+
+    throw invalid_argument("You cannot use advance in " + currentLocation->getName() + ".");
+}
+
+void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
+    if (remainingActions <= 0) {
+        throw invalid_argument("No remaining actions.");
+    }
+
+    bool atInvisibleMan = false;
+    for (const auto& c : currentLocation->getCharacters()) {
+        if (c == "Invisible man") atInvisibleMan = true;
+    }
+
+    if (!atInvisibleMan && currentLocation != dracula.getCurrentLocation()) {
+        throw invalid_argument("Defeat action cannot be used when there is no monster in your location.");
+    }
+
+    if (atInvisibleMan) {
+        if (!taskBoard.allCluesDelivered()) {
+            throw invalid_argument("Not all items have been delivered. You cannot defeat the Invisible man yet.");
+        }
+        vector<pair<size_t, Item>> redItems;
+        for (size_t i = 0; i < items.size(); ++i) {
+            if (items[i].getColor() == ItemColor::Red) {
+                redItems.push_back({i, items[i]});
+            }
+        }
+        if (redItems.empty()) {
+            throw invalid_argument("You have no red items to use against the Invisible man.");
+        }
+        cout << "Choose a red item to use against the Invisible man (" << taskBoard.getInvisibleManDefeatStrength() << "/9 so far):\n";
+        for (size_t i = 0; i < redItems.size(); ++i) {
+            cout << i + 1 << ". " << redItems[i].second.getItemName() << " (Power: " << redItems[i].second.getPower() << ")\n";
+        }
+        int choice;
+        cout << "Enter your choice: ";
+        cin >> choice;
+        cin.ignore();
+        if (choice > 0 && choice <= static_cast<int>(redItems.size())) {
+            const auto& selectedItem = redItems[choice - 1];
+            taskBoard.addStrengthToInvisibleMan(selectedItem.second.getPower());
+            cout << playerName << "(" << heroName << ") used " << selectedItem.second.getItemName() << " against the Invisible man.\n";
+            removeItem(selectedItem.first);
+            remainingActions--;
+            if (taskBoard.getInvisibleManDefeatStrength() >= 9) {
+                taskBoard.defeatInvisibleMan();
+                cout << playerName << "(" << heroName << ") has defeated the Invisible man!\n";
+            }
+            return;
+        } else {
+            cout << "Invalid choice.\n";
+            return;
+        }
+    }
+
+    if (!taskBoard.allCoffinsDestroyed()) {
+        throw invalid_argument("Not all coffins have been destroyed. You cannot defeat Dracula yet.");
+    }
+    if (currentLocation != dracula.getCurrentLocation()) {
+        throw invalid_argument("You are not at the same location as Dracula.");
+    }
+    vector<pair<size_t, Item>> yellowItems;
+    for (size_t i = 0; i < items.size(); ++i) {
+        if (items[i].getColor() == ItemColor::Yellow) {
+            yellowItems.push_back({i, items[i]});
+        }
+    }
+    if (yellowItems.empty()) {
+        throw invalid_argument("You have no yellow items to use against Dracula.");
+    }
+    cout << "Choose a yellow item to use against Dracula (" << taskBoard.getDraculaDefeatStrength() << "/6 so far):\n";
+    for (size_t i = 0; i < yellowItems.size(); ++i) {
+        cout << i + 1 << ". " << yellowItems[i].second.getItemName() << " (Power: " << yellowItems[i].second.getPower() << ")\n";
+    }
+    int choice;
+    cout << "Enter your choice: ";
+    cin >> choice;
+    cin.ignore();
+    if (choice > 0 && choice <= static_cast<int>(yellowItems.size())) {
+        const auto& selectedItem = yellowItems[choice - 1];
+        taskBoard.addStrengthToDracula(selectedItem.second.getPower());
+        cout << heroName << " used " << selectedItem.second.getItemName() << " against Dracula.\n";
+        removeItem(selectedItem.first);
+        remainingActions--;
+        if (taskBoard.getDraculaDefeatStrength() >= 6) {
+            cout << heroName << " has defeated Dracula!\n";
+        }
+    } else {
+        cout << "Invalid choice.\n";
+    }
+}
+
 
 

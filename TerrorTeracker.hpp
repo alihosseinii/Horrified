@@ -11,12 +11,10 @@ private:
 public:
     TerrorTracker();
 
-    void reset();
     void increase();  
     int getLevel() const;
 
-    bool lost() const;
     std::string getStatus() const;
 };
 
-#endif 
+#endif

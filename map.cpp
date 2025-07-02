@@ -51,6 +51,8 @@ Map::Map() {
     addNeighbor("Cave", "Camp");
     addNeighbor("Camp", "Precinct");
     addNeighbor("Camp", "Mansion"); 
+    addNeighbor("Camp", "Inn");
+    addNeighbor("Camp", "Theatre");
     addNeighbor("Precinct", "Mansion"); 
     addNeighbor("Precinct", "Inn");
     addNeighbor("Precinct", "Theatre"); 

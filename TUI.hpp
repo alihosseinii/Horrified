@@ -19,7 +19,7 @@ public:
     void showWelcomeScreen();
     void showGameStatus(const GameManager& game);
     void showHeroStatus(const Hero& hero);
-    void showMapASCII();
+    void showMap();
     void showActionMenu();
     void showMonsterCard(const MonsterCard& card);
     void showVillagerList(const std::vector<Villager*>& villagers);

@@ -53,24 +53,19 @@ string TUI::askForLocationName() {
     return name;
 }
 void TUI::showMap() {
-    std::cout << "\n========== MAP ==========\n";
-    std::cout << "          Laboratory\n";
-    std::cout << "               │\n";
-    std::cout << "  Camp ─── Tower ─── Dungeon\n";
-    std::cout << "   │         │         │\n";
-    std::cout << "Barn ─── Mansion ─── Crypt\n";
-    std::cout << "   │         │         │\n";
-    std::cout << "  Church ── Graveyard ── Cave\n";
-    std::cout << "     │                   │\n";
-    std::cout << "  Hospital           Lagoon\n";
-    std::cout << "     │                   │\n";
-    std::cout << "   Inn ───── Docks ───── Shop\n";
-    std::cout << "     │         │         │\n";
-    std::cout << "  Station ─── Theater ─── Precinct\n";
-    std::cout << "                      │\n";
-    std::cout << "                  Institute\n";
-    std::cout << "===========================\n";
+    cout << "\n=========================== HORRIFIED MAP ============================\n";
+    cout << "cave ──── camp      precint      Inn      Barn       Dungeon\n";
+    cout << "            │          |          |         |           |\n";
+    cout << "             ────────────────────────────Theater──────Tower────Docks\n";
+    cout << "                       │                    │\n";
+    cout << "        Abbry────────Mansion──────────────Shop────Laboratory────institute\n";
+    cout << "          │                    /      |\n";
+    cout << "        crypt             Museum────Church────Graveyard\n";
+    cout << "                                      │\n";
+    cout << "                                  Hospital\n";
+    cout << "=======================================================================\n";
 }
+
 
 
 void TUI::showLocationOverview(const vector<Location*>& locations) {

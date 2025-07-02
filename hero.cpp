@@ -135,7 +135,6 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
     }
 
     if (characterExists) {
-        cin.ignore();
         while (true) {
             cout << "Do you want to move villager(s) with yourself(Yes or No)? ";
             getline(cin, answer);
@@ -156,8 +155,8 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
     }
 
     currentLocation->removeCharacter(heroName);
-    newLocation->addCharacter(heroName);
     setCurrentLocation(newLocation);
+    newLocation->addCharacter(heroName);
 
     cout << heroName << " (" << playerName << ") moved to " << currentLocation->getName() << ".\n";
     remainingActions--;
@@ -585,7 +584,7 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
         removeItem(selectedItem.first);
         remainingActions--;
         if (taskBoard.getDraculaDefeatStrength() >= 6) {
-            cout << heroName << " has defeated Dracula!\n";
+            cout << playerName << "(" << heroName << ") has defeated the Dracula!\n";
         }
     } else {
         cout << "Invalid choice.\n";

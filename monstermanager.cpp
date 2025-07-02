@@ -110,7 +110,7 @@ bool MonsterManager::isEmpty() const {
     return cards.empty();
 }
 
-void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* hero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, VillagerManager& villagerManager) {
+void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, VillagerManager& villagerManager) {
     auto monsterCard = drawCard();
 
     for (size_t i = 0; i < monsterCard.getItemCount(); ++i) {
@@ -118,11 +118,11 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
     }
 
     if (monsterCard.getName() == "Form Of The Bat") {
-        auto heroLocation = hero->getCurrentLocation();
+        auto currentHeroLocation = currentHero->getCurrentLocation();
         dracula->getCurrentLocation()->removeCharacter("Dracula");
-        dracula->setCurrentLocation(heroLocation);
-        heroLocation->addCharacter("Dracula");
-        cout << "Dracula moved to " << heroLocation->getName() << "!\n";
+        dracula->setCurrentLocation(currentHeroLocation);
+        currentHeroLocation->addCharacter("Dracula");
+        cout << "Dracula moved to " << currentHeroLocation->getName() << "!\n";
     }
     else if (monsterCard.getName() == "Sunrise") {
         auto cryptLocation = map.getLocation("Crypt");
@@ -137,6 +137,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
             invisibleMan->getCurrentLocation()->removeCharacter("Invisible man");
             invisibleMan->setCurrentLocation(locationWithMostItems);
             locationWithMostItems->addCharacter("Invisible man");
+            locationWithMostItems->clearItems();
             cout << "Invisible man moved to " << locationWithMostItems->getName() << "!\n";
         } else {
             cout << "No items found anywhere. Invisible man stays in place.\n";
@@ -203,11 +204,9 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                 try {
                     auto villager = villagerManager.getVillager(closestCharacter);
                     villager->moveByMonster(closerLocation);
-                    cout << closestCharacter << " was moved closer to Dracula!\n";
                 } catch (const exception& e) {
                     closestLocation->removeCharacter(closestCharacter);
                     closerLocation->addCharacter(closestCharacter);
-                    cout << closestCharacter << " was moved closer to Dracula!\n";
                 }
             }
         }
@@ -254,7 +253,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                 if (monster != nullptr) {
                     if (strike.monster == MonsterType::InvisibleMan) {
                         int terrorBefore = terrorTracker.getLevel();
-                        monster->power(hero, terrorTracker);
+                        monster->power(currentHero, terrorTracker);
                         int terrorAfter = terrorTracker.getLevel();
                         
                         if (terrorAfter == terrorBefore) {
@@ -267,7 +266,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                         }
                     } else {
                         int terrorBefore = terrorTracker.getLevel();
-                        monster->power(hero, terrorTracker);
+                        monster->power(currentHero, terrorTracker);
                         int terrorAfter = terrorTracker.getLevel();
                         
                         if (terrorAfter > terrorBefore) {
@@ -306,19 +305,26 @@ void MonsterManager::moveVillagersCloserToSafePlaces(Map& map, VillagerManager& 
         {"Maria", "Camp"}
     };
     
-    for (const auto& [villagerName, safePlace] : safePlaces) {
-        try {
-            auto villager = villagerManager.getVillager(villagerName);
-            auto currentLocation = villager->getCurrentLocation();
-            auto safeLocation = map.getLocation(safePlace);
-            auto closerLocation = map.findCloserLocation(currentLocation, safeLocation);
-            
-            if (closerLocation != nullptr && closerLocation != currentLocation) {
-                villager->moveByMonster(closerLocation); 
-                cout << villagerName << " moved closer to " << safePlace << "!\n";
+    for (const auto& [locName, location] : map.locations) {
+        const auto& chars = location->getCharacters();
+        for (const auto& character : chars) {
+            auto it = safePlaces.find(character);
+            if (it == safePlaces.end()) continue;
+            const std::string& safePlace = it->second;
+            try {
+                auto villager = villagerManager.getVillager(character);
+                auto currentLocation = villager->getCurrentLocation();
+                if (!currentLocation) continue;
+                auto safeLocation = map.getLocation(safePlace);
+                if (!safeLocation) continue;
+                if (currentLocation == safeLocation) continue;
+                auto closerLocation = map.findCloserLocation(currentLocation, safeLocation);
+                if (closerLocation != nullptr && closerLocation != currentLocation) {
+                    villager->moveByMonster(closerLocation); 
+                }
+            } catch (const exception& e) {
+                continue;
             }
-        } catch (const exception& e) {
-            continue;
         }
     }
 } 

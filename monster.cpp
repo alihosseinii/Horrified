@@ -41,61 +41,70 @@ void Monster::setCurrentLocation(shared_ptr<Location> currentLocation) {
 }
 
 void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumber) {
-    auto currentLocationCharacterExistence = currentLocation->getCharacters();
-    if (!currentLocationCharacterExistence.empty()) {
-        for (const auto& c : currentLocationCharacterExistence) {
-            if (c == "Invisible man" || c == "Dracula") continue;
+    for (const auto& c : currentLocation->getCharacters()) {
+        if (c != monsterName && c != "Invisible man" && c != "Dracula") {
             return;
         }
     }
 
-    queue<shared_ptr<Location>> q;
-    unordered_set<string> visited;
-    unordered_map<string, shared_ptr<Location>> parent;
-
-    q.push(currentLocation);
+    using Path = std::vector<std::shared_ptr<Location>>;
+    std::queue<Path> q;
+    std::unordered_set<std::string> visited;
+    q.push({currentLocation});
     visited.insert(currentLocation->getName());
 
-    while (!q.empty()) {
-        auto current = q.front();
+    Path shortestPathToTarget;
+    bool found = false;
+
+    while (!q.empty() && !found) {
+        Path path = q.front();
         q.pop();
-
-        for (const auto& neighbor : current->getNeighbors()) {
+        auto loc = path.back();
+        for (const auto& neighbor : loc->getNeighbors()) {
             if (!neighbor) continue;
-
-            if (visited.find(neighbor->getName()) == visited.end()) {
-                visited.insert(neighbor->getName());
-                parent[neighbor->getName()] = current;
-                q.push(neighbor);
-
-                auto characters = neighbor->getCharacters();
-                for (const auto& character : characters) {
-                    if (character != monsterName) {
-                        vector<shared_ptr<Location>> path;
-                        auto step = neighbor;
-                        while (step && step != currentLocation) {
-                            path.push_back(step);
-                            step = parent[step->getName()];
-                        }
-                        path.push_back(currentLocation);
-
-                        shared_ptr<Location> newLocation;
-                        if (path.size() == 1) {
-                            newLocation = path.back();
-                        } else {
-                            newLocation = path[stepNumber];
-                        }
-
-                        currentLocation->removeCharacter(monsterName);
-                        newLocation->addCharacter(monsterName);
-                        setCurrentLocation(newLocation);
-                        cout << monsterName << " moved to " << newLocation->getName() << ".\n";
-                        return;
-                    }
+            if (visited.count(neighbor->getName())) continue;
+            visited.insert(neighbor->getName());
+            Path newPath = path;
+            newPath.push_back(neighbor);
+            for (const auto& c : neighbor->getCharacters()) {
+                if (c != monsterName && c != "Invisible man" && c != "Dracula") {
+                    shortestPathToTarget = newPath;
+                    found = true;
+                    break;
                 }
             }
+            if (found) break;
+            q.push(newPath);
         }
     }
+
+    if (!found || shortestPathToTarget.size() < 2) {
+        return;
+    }
+
+    int stepsToMove = std::min(stepNumber, static_cast<int>(shortestPathToTarget.size()) - 1);
+    std::shared_ptr<Location> newLocation = shortestPathToTarget[stepsToMove];
+
+    for (int i = 1; i <= stepsToMove; ++i) {
+        auto loc = shortestPathToTarget[i];
+        bool hasTarget = false;
+        for (const auto& c : loc->getCharacters()) {
+            if (c != monsterName && c != "Invisible man" && c != "Dracula") {
+                newLocation = loc;
+                stepsToMove = i;
+                hasTarget = true;
+                break;
+            }
+        }
+        if (hasTarget) {
+            break;
+        }
+    }
+
+    currentLocation->removeCharacter(monsterName);
+    newLocation->addCharacter(monsterName);
+    setCurrentLocation(newLocation);
+    std::cout << monsterName << " moved to " << newLocation->getName() << ".\n";
 }
 
 bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTracker, Map& map) {
@@ -131,66 +140,54 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
     
     if (targetHero) {
         cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ")!\n";
-        
-        string answer;
-        while (true) {
-            cout << "Do you want to use an item to defend yourself? (Yes/No): ";
-            getline(cin, answer);
-            if (answer == "Yes" || answer == "yes" || answer == "No" || answer == "no") break;
-            cout << "Invalid input. Please enter Yes or No.\n";
-        }
-        
-        if (answer == "Yes" || answer == "yes") {
-            auto items = targetHero->getItems();
-            if (!items.empty()) {
+        auto items = targetHero->getItems();
+        if (!items.empty()) {
+            string answer;
+            while (true) {
+                cout << "Do you want to use an item to defend yourself? (Yes/No): ";
+                getline(cin, answer);
+                if (answer == "Yes" || answer == "yes" || answer == "No" || answer == "no") break;
+                cout << "Invalid input. Please enter Yes or No.\n";
+            }
+            if (answer == "Yes" || answer == "yes") {
                 cout << "Available items:\n";
                 for (size_t i = 0; i < items.size(); ++i) {
                     cout << i + 1 << ". " << items[i].getItemName() << " (" 
                          << Item::colorToString(items[i].getColor()) << ", Power: " 
                          << items[i].getPower() << ")\n";
                 }
-                
                 cout << "Enter item number to use (0 to cancel): ";
                 int choice;
                 cin >> choice;
                 cin.ignore();
-                
                 if (choice > 0 && choice <= static_cast<int>(items.size())) {
                     cout << targetHero->getPlayerName() << " used " << items[choice-1].getItemName() << " to defend!\n";
-                    
                     targetHero->removeItem(choice - 1);
-                    
                     return false;
                 }
-            } else {
-                cout << "You have no items to use!\n";
             }
+        } else {
+            cout << "You have no items to use!\n";
         }
-        
         try {
             auto hospital = map.getLocation("Hospital");
             currentLocation->removeCharacter(targetHero->getHeroName());
             hospital->addCharacter(targetHero->getHeroName());
             targetHero->setCurrentLocation(hospital);
             cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ") was wounded and moved to Hospital.\n";
-
             terrorTracker.increase();
             cout << "Terror level increased to " << terrorTracker.getLevel() << " due to the attack!\n";
             return true;
         } catch (const exception& e) {
             cout << e.what() << endl;
         }
-        
     } else if (!targetVillager.empty()) {
         cout << targetVillager << "!\n";
         currentLocation->removeCharacter(targetVillager);
         cout << targetVillager << " was killed by " << monsterName << "!\n";
-
         terrorTracker.increase();
         cout << "Terror level increased to " << terrorTracker.getLevel() << " due to the attack!\n";
-        
         return true;
     }
-    
     return false;
 }

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Mayor::Mayor(const string& playerName, shared_ptr<Town> startingTown) : Hero(playerName, "Mayor", 5, startingTown) {}
+Mayor::Mayor(const string& playerName, shared_ptr<Location> startingLocation) : Hero(playerName, "Mayor", 5, startingLocation) {}
 
 void Mayor::specialAction() {
     throw invalid_argument("Mayor has no special action.");

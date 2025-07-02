@@ -50,6 +50,9 @@ public:
     std::shared_ptr<Location> getCurrentLocation() const;
     void setCurrentLocation(std::shared_ptr<Location> currentLocation);
     
+    void setMaxActions(int maxActions);
+    int getMaxActions() const;
+
 protected:
     std::vector<Item> items;
     std::vector<PerkCard> perkCards;
@@ -62,8 +65,6 @@ protected:
 
     void setHeroName(std::string heroName);
     void setPlayerName(std::string playerName);
-    void setMaxActions(int maxActions);
-    int getMaxActions() const;
 };
 
 #endif

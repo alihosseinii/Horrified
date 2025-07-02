@@ -3,8 +3,8 @@
 
 using namespace std;
 
-void VillagerManager::addVillager(const string& villagerName, shared_ptr<Town> town) {
-    villagerMap[villagerName] = make_shared<Villager>(villagerName, town);
+void VillagerManager::addVillager(const string& villagerName, shared_ptr<Location> location) {
+    villagerMap[villagerName] = make_shared<Villager>(villagerName, location);
 }
 
 shared_ptr<Villager> VillagerManager::getVillager(const string& villagerName) const {

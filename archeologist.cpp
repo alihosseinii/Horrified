@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Archeologist::Archeologist(const string& playerName, shared_ptr<Location> startingLocation) : Hero(playerName, "Archeologist", 3, startingLocation) {}
+Archeologist::Archeologist(const string& playerName, shared_ptr<Location> startingLocation) : Hero(playerName, "Archeologist", 4, startingLocation) {}
 
 void Archeologist::specialAction() {
     if (remainingActions <= 0) {

@@ -110,7 +110,8 @@ bool MonsterManager::isEmpty() const {
     return cards.empty();
 }
 
-void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, VillagerManager& villagerManager) {
+void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, VillagerManager& villagerManager, vector<string>& diceResults) {
+    diceResults.clear();
     auto monsterCard = drawCard();
 
     for (size_t i = 0; i < monsterCard.getItemCount(); ++i) {
@@ -246,7 +247,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
         for (size_t j = 0; j < strike.diceCount; ++j) {
             DiceFace diceFace = dice.roll();
             string face = dice.faceToString(diceFace);
-
+            diceResults.push_back(face);
             if (face == " ") continue;
             
             if (face == "!") {

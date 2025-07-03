@@ -65,6 +65,7 @@ protected:
 
     void setHeroName(std::string heroName);
     void setPlayerName(std::string playerName);
+    void moveTwoSteps();
 };
 
 #endif

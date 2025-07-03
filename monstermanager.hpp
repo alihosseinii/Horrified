@@ -30,7 +30,7 @@ public:
     void shuffle();
     MonsterCard drawCard();
     bool isEmpty() const;
-    void MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, VillagerManager& villagerManager);
+    void MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, VillagerManager& villagerManager, std::vector<std::string>& diceResults);
     void moveVillagersCloserToSafePlaces(Map& map, VillagerManager& villagerManager);
 };
 

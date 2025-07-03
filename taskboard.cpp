@@ -67,7 +67,7 @@ std::string TaskBoard::getDraculaTaskStatus() const {
                   + (task_status.completed ? "(Destroyed)" : "(Active)") + "\n";
     }
     status += "Defeat Dracula: " + std::to_string(draculaDefeat.currentStrength) + "/6 Strength "
-              + (draculaDefeat.completed ? "(Defeated)" : "(Vulnerable)") + "\n";
+              + (draculaDefeat.completed ? "(Defeated)" : "") + "\n";
     return status;
 }
 
@@ -113,11 +113,11 @@ bool TaskBoard::isInvisibleManDefeated() const {
 }
 
 std::string TaskBoard::getInvisibleManClueStatus() const {
-    std::string status = "Invisible Man Clues Delivered:\n";
+    std::string status = "Invisible Man Evidences Delivered:\n";
     for (const auto& [loc, delivered] : invisibleManCluesDelivered) {
         status += "- " + loc + ": " + (delivered ? "Delivered" : "Missing") + "\n";
     }
     status += "Defeat Invisible Man: " + std::to_string(invisibleManDefeat.currentStrength) + "/9 Red Strength "
-              + (invisibleManDefeated ? "(Defeated)" : "(Vulnerable)") + "\n";
+              + (invisibleManDefeated ? "(Defeated)" : "") + "\n";
     return status;
 }

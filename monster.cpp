@@ -79,6 +79,7 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
     }
 
     if (!found || shortestPathToTarget.size() < 2) {
+        cout << monsterName << " didn't move: no valid targets nearby.\n";
         return;
     }
 
@@ -104,7 +105,7 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
     currentLocation->removeCharacter(monsterName);
     newLocation->addCharacter(monsterName);
     setCurrentLocation(newLocation);
-    std::cout << monsterName << " moved to " << newLocation->getName() << ".\n";
+    cout << monsterName << " moved to " << newLocation->getName() << ".\n";
 }
 
 bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTracker, Map& map) {
@@ -159,7 +160,7 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
                 cout << "Enter item number to use (0 to cancel): ";
                 int choice;
                 cin >> choice;
-                cin.ignore();
+                cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 if (choice > 0 && choice <= static_cast<int>(items.size())) {
                     cout << targetHero->getPlayerName() << " used " << items[choice-1].getItemName() << " to defend!\n";
                     targetHero->removeItem(choice - 1);

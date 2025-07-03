@@ -13,8 +13,6 @@ public:
 
     void increase();  
     int getLevel() const;
-
-    std::string getStatus() const;
 };
 
 #endif

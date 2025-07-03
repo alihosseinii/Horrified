@@ -3,30 +3,31 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <memory>
 
-class GameManager;
 class Location;
 class Hero;
 class Item;
 class Villager;
 class Monster;
-class MonsterCard;
+class ItemBag;
+class Map;
+class TaskBoard;
 
 class TUI {
 public:
     TUI();
-
-    void showWelcomeScreen();
-    void showGameStatus(const GameManager& game);
-    void showHeroStatus(const Hero& hero);
-    void showMap();
-    void showActionMenu();
-    void showMonsterCard(const MonsterCard& card);
-    void showVillagerList(const std::vector<Villager*>& villagers);
-    void showLocationOverview(const std::vector<Location*>& locations);
-
+    void clearScreen();
     void showMessage(const std::string& message);
-    std::string askForCommand();
-    int askForNumber(const std::string& prompt, int min, int max);
-    std::string askForLocationName();
+    void showWelcomeScreen();
+    void showHelpMenu();
+    void showTerrorLevelAndTurn(int terror, int maxTerror, int turn);
+    void showMapWithHeroInfo(const Hero* hero1, const Hero* hero2);
+    void showActionMenuWithVillagers(const Map& map);
+    void showItemsOnBoard(const ItemBag& itembag, const Map& map);
+    void showMonsterStatus(const std::vector<Monster*>& monsters, const Map& map, const TaskBoard& taskBoard);
+    void showDiceRoll(const std::vector<std::string>& diceResults);
 };
+
+#endif

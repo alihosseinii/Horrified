@@ -14,26 +14,29 @@ Monster* FrenzyMarker::getCurrentFrenzied() const {
 }
 
 void FrenzyMarker::advance(Monster* dracula, Monster* invisibleMan) {
-    if (dracula->getCurrentLocation() == nullptr) {
-        monsterOrder.at(0) = nullptr;
-        currentFrenzied = invisibleMan;
-        return;
+    monsterOrder.clear();
+    if (dracula && dracula->getCurrentLocation()) {
+        monsterOrder.push_back(dracula);
     }
-    if (invisibleMan->getCurrentLocation() == nullptr) {
-        monsterOrder.at(1) = nullptr;
-        currentFrenzied = dracula;
-        return;
+    if (invisibleMan && invisibleMan->getCurrentLocation()) {
+        monsterOrder.push_back(invisibleMan);
     }
 
-    if (monsterOrder.empty() || currentFrenzied == nullptr) return;
+    if (monsterOrder.empty()) {
+        currentFrenzied = nullptr;
+        return;
+    }
 
     auto it = find(monsterOrder.begin(), monsterOrder.end(), currentFrenzied);
-    if (it != monsterOrder.end()) {
-        ++it;
-        if (it == monsterOrder.end()) {
-            currentFrenzied = monsterOrder.at(0);
-        } else {
-            currentFrenzied = *it;
-        }
+    if (it == monsterOrder.end() || currentFrenzied == nullptr) {
+        currentFrenzied = monsterOrder.front();
+        return;
+    }
+
+    ++it;
+    if (it == monsterOrder.end()) {
+        currentFrenzied = monsterOrder.front();
+    } else {
+        currentFrenzied = *it;
     }
 }

@@ -86,8 +86,8 @@ void Villager::move(shared_ptr<Location> newLocation, Hero* guidingHero, PerkDec
 
     try {
         currentLocation->removeCharacter(villagerName);
-        setCurrentLocation(newLocation);
         newLocation->addCharacter(villagerName);
+        setCurrentLocation(newLocation);
         cout << villagerName << " moved to " << newLocation->getName() << ".\n";
 
         bool reachedSafePlace = false;
@@ -144,8 +144,8 @@ void Villager::moveByMonster(shared_ptr<Location> newLocation) {
 
     try {
         currentLocation->removeCharacter(villagerName);
-        setCurrentLocation(newLocation);
         newLocation->addCharacter(villagerName);
+        setCurrentLocation(newLocation);
         cout << villagerName << " moved to " << newLocation->getName() << ".\n";
 
         checkSafePlace();

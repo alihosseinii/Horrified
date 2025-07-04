@@ -29,6 +29,7 @@ public:
     void setCurrentLocation(std::shared_ptr<Location> currentLocation);
 
     void moveToNearestCharacter(const std::string& targetCharacter, int stepNumber);
+    void moveTwoSteps();
 protected:
     std::string monsterName;
     std::shared_ptr<Location> currentLocation;

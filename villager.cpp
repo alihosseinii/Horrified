@@ -86,8 +86,8 @@ void Villager::move(shared_ptr<Location> newLocation, Hero* guidingHero, PerkDec
 
     try {
         currentLocation->removeCharacter(villagerName);
-        newLocation->addCharacter(villagerName);
         setCurrentLocation(newLocation);
+        newLocation->addCharacter(villagerName);
         cout << villagerName << " moved to " << newLocation->getName() << ".\n";
 
         bool reachedSafePlace = false;
@@ -142,24 +142,10 @@ void Villager::moveByMonster(shared_ptr<Location> newLocation) {
         throw invalid_argument("There is no location called " + newLocation->getName());
     }
 
-    const auto& neighbors = currentLocation->getNeighbors();
-    bool canMove = false;
-
-    for (const auto& neighbor : neighbors) {
-        if (neighbor && neighbor->getName() == newLocation->getName()) {
-            canMove = true;
-            break;
-        }
-    }
-
-    if (!canMove) {
-        throw invalid_argument(villagerName + " can't move to " + newLocation->getName() + " - not a neighbor.");
-    }
-
     try {
         currentLocation->removeCharacter(villagerName);
-        newLocation->addCharacter(villagerName);
         setCurrentLocation(newLocation);
+        newLocation->addCharacter(villagerName);
         cout << villagerName << " moved to " << newLocation->getName() << ".\n";
 
         checkSafePlace();

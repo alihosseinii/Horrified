@@ -41,7 +41,6 @@ public:
 
     void addPerkCard(const PerkCard& card);
     const std::vector<PerkCard>& getPerkCards() const;
-    void displayPerkCards() const;
     bool usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck = nullptr, InvisibleMan* invisibleMan = nullptr, ItemBag* itemBag = nullptr, Hero* otherHero = nullptr, Dracula* dracula = nullptr);
     void removePerkCard(size_t index);
     bool shouldSkipNextMonsterPhase() const;

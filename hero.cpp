@@ -105,6 +105,7 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
     if (currentLocation == newLocation) {
         throw invalid_argument(playerName + " (" + heroName + ") is already in " + currentLocation->getName());
     }
+
     if (!newLocation) {
         throw invalid_argument("There is no location called " + newLocation->getName());
     }
@@ -145,8 +146,12 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
                     if (character == "Archeologist" || character == "Mayor" || character == "Dracula" || character == "Invisible man") {
                         continue;
                     }
-                    auto villager = villagerManager.getVillager(character);
-                    villager->move(newLocation, this, perkDeck);
+                    try {
+                        auto villager = villagerManager.getVillager(character);
+                        villager->move(newLocation, this, perkDeck);
+                    } catch (const exception& e) {
+                        cout << e.what() << endl;
+                    }
                 }
                 break;
             }
@@ -154,11 +159,16 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
         }
     }
 
-    currentLocation->removeCharacter(heroName);
-    setCurrentLocation(newLocation);
-    newLocation->addCharacter(heroName);
+    try {
+        setCurrentLocation(newLocation);
+        currentLocation->removeCharacter(heroName);
+        newLocation->addCharacter(heroName);
+    
+        cout << heroName << " (" << playerName << ") moved to " << currentLocation->getName() << ".\n";
+    } catch (const exception& e) {
+        cout << e.what() << endl;
+    }
 
-    cout << heroName << " (" << playerName << ") moved to " << currentLocation->getName() << ".\n";
     remainingActions--;
 }
 
@@ -177,7 +187,9 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
         const auto& characters = loc->getCharacters();
         for (const auto& character : characters) {
             if (character == "Dracula" || character == "Invisible man" || character == "Archeologist" || character == "Mayor") continue;
+
             std::vector<std::shared_ptr<Location>> possibleMoves;
+
             if (loc->getName() == heroLoc->getName()) {
                 for (const auto& neighbor : heroNeighbors) {
                     possibleMoves.push_back(neighbor);
@@ -191,12 +203,13 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
                     }
                 }
             }
+
             if (!possibleMoves.empty()) {
                 try {
                     auto villager = villagerManager.getVillager(character);
                     guidableVillagers.push_back(villager);
                     guidableMoves.push_back(possibleMoves);
-                } catch (const std::exception& e) {
+                } catch (const exception& e) {
                     cout << e.what() << endl;
                 }
             }
@@ -213,34 +226,45 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
         cout << i + 1 << ". " << guidableVillagers[i]->getVillagerName()
              << " (at " << guidableVillagers[i]->getCurrentLocation()->getName() << ")\n";
     }
+
     cout << "Choose a villager to guide (1-" << guidableVillagers.size() << "): ";
     int villagerIndex;
     cin >> villagerIndex;
-    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
     if (villagerIndex < 1 || villagerIndex > static_cast<int>(guidableVillagers.size())) {
         cout << "Invalid choice.\n";
         return;
     }
+
     auto chosenVillager = guidableVillagers[villagerIndex - 1];
     auto& possibleLocations = guidableMoves[villagerIndex - 1];
+    std::shared_ptr<Location> chosenLocation;
 
-    cout << "Where do you want to take " << chosenVillager->getVillagerName() << "?\n";
-    for (size_t i = 0; i < possibleLocations.size(); ++i) {
-        cout << i + 1 << ". " << possibleLocations[i]->getName() << "\n";
+    if (possibleLocations.size() == 1) {
+        chosenLocation = possibleLocations[0];
+        cout << chosenVillager->getVillagerName() << " will move to " << chosenLocation->getName() << ".\n";
+    } else {
+        cout << "Where do you want to take " << chosenVillager->getVillagerName() << "?\n";
+        for (size_t i = 0; i < possibleLocations.size(); ++i) {
+            cout << i + 1 << ". " << possibleLocations[i]->getName() << "\n";
+        }
+        cout << "Choose location (1-" << possibleLocations.size() << "): ";
+        int locationIndex;
+        cin >> locationIndex;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        if (locationIndex < 1 || locationIndex > static_cast<int>(possibleLocations.size())) {
+            cout << "Invalid choice.\n";
+            return;
+        }
+
+        chosenLocation = possibleLocations[locationIndex - 1];
     }
-    cout << "Choose location (1-" << possibleLocations.size() << "): ";
-    int locationIndex;
-    cin >> locationIndex;
-    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    if (locationIndex < 1 || locationIndex > static_cast<int>(possibleLocations.size())) {
-        cout << "Invalid choice.\n";
-        return;
-    }
-    auto chosenLocation = possibleLocations[locationIndex - 1];
 
     try {
         chosenVillager->move(chosenLocation, this, perkDeck);
-    } catch (const std::exception& e) {
+    } catch (const exception& e) {
         cout << e.what() << endl;
         return;
     }

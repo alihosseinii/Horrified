@@ -161,8 +161,8 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
 
     try {
         currentLocation->removeCharacter(heroName);
-        setCurrentLocation(newLocation);
         newLocation->addCharacter(heroName);
+        setCurrentLocation(newLocation);
     
         cout << heroName << " (" << playerName << ") moved to " << currentLocation->getName() << ".\n";
     } catch (const exception& e) {
@@ -347,9 +347,9 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
                 
                 if (invisibleMan != nullptr) {
                     auto currentLocation = invisibleMan->getCurrentLocation();
-                    invisibleMan->setCurrentLocation(targetLocation);
                     currentLocation->removeCharacter("Invisible man");
                     targetLocation->addCharacter("Invisible man");
+                    invisibleMan->setCurrentLocation(targetLocation);
                     cout << "Invisible man moved to " << targetLocation->getName() << ".\n";
                 } else {
                     cout << "Invisible Man is dead.\n";
@@ -484,7 +484,7 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
     }
 
     if (!taskBoard.isCoffinLocation(currentLocation->getName())) {
-        throw invalid_argument("There is no coffin at this location.");
+        throw invalid_argument("You cannot use advance in " + currentLocation->getName() + ".");
     }
     if (taskBoard.isCoffinDestroyed(currentLocation->getName())) {
         throw invalid_argument("The coffin at this location has already been destroyed.");
@@ -517,8 +517,6 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
         cout << "Invalid choice.\n";
         return;
     }
-
-    throw invalid_argument("You cannot use advance in " + currentLocation->getName() + ".");
 }
 
 void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
@@ -616,9 +614,9 @@ void Hero::moveTwoSteps() {
         const auto& neighbors = loc->getNeighbors();
         if (neighbors.empty()) break;
         auto nextLoc = neighbors[0];
-        setCurrentLocation(nextLoc);
         loc->removeCharacter(getHeroName());
         nextLoc->addCharacter(getHeroName());
+        setCurrentLocation(nextLoc);
         loc = nextLoc;
     }
 }

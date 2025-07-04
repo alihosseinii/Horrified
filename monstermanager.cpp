@@ -121,23 +121,23 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
     if (monsterCard.getName() == "Form Of The Bat") {
         auto currentHeroLocation = currentHero->getCurrentLocation();
         dracula->getCurrentLocation()->removeCharacter("Dracula");
-        dracula->setCurrentLocation(currentHeroLocation);
         currentHeroLocation->addCharacter("Dracula");
+        dracula->setCurrentLocation(currentHeroLocation);
         cout << "Dracula moved to " << currentHeroLocation->getName() << "!\n";
     }
     else if (monsterCard.getName() == "Sunrise") {
         auto cryptLocation = map.getLocation("Crypt");
         dracula->getCurrentLocation()->removeCharacter("Dracula");
-        dracula->setCurrentLocation(cryptLocation);
         cryptLocation->addCharacter("Dracula");
+        dracula->setCurrentLocation(cryptLocation);
         cout << "Dracula moved to Crypt!\n";
     }
     else if (monsterCard.getName() == "Thief") {
         auto locationWithMostItems = map.getLocationWithMostItems();
         if (locationWithMostItems != nullptr) {
             invisibleMan->getCurrentLocation()->removeCharacter("Invisible man");
-            invisibleMan->setCurrentLocation(locationWithMostItems);
             locationWithMostItems->addCharacter("Invisible man");
+            invisibleMan->setCurrentLocation(locationWithMostItems);
             locationWithMostItems->clearItems();
             cout << "Invisible man moved to " << locationWithMostItems->getName() << "!\n";
         } else {
@@ -204,15 +204,15 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
             if (closerLocation != nullptr) {
                 try {
                 if (closestCharacter == "Archeologist") {
-                    archeologist->setCurrentLocation(closerLocation);
                     archeologist->getCurrentLocation()->removeCharacter("Archeologist");
                     closerLocation->addCharacter("Archeologist");
+                    archeologist->setCurrentLocation(closerLocation);
                     cout << archeologist->getPlayerName() << " (Archeologist) moved to " << closerLocation->getName() << ".\n";
                 }
                 if (closestCharacter == "Mayor") {
-                    mayor->setCurrentLocation(closerLocation);
                     mayor->getCurrentLocation()->removeCharacter("Mayor");
                     closerLocation->addCharacter("Mayor");
+                    mayor->setCurrentLocation(closerLocation);
                     cout << mayor->getPlayerName() << " (Mayor) moved to " << closerLocation->getName() << ".\n";
                 }
                     auto villager = villagerManager.getVillager(closestCharacter);

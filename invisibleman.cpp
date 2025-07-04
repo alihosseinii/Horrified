@@ -81,8 +81,8 @@ void InvisibleMan::moveTowardsVillager(int steps) {
     int moveCount = min(steps, static_cast<int>(path.size()));
     for (int i = 0; i < moveCount; ++i) {
         currentLocation->removeCharacter(monsterName);
-        setCurrentLocation(path[i]);
         path[i]->addCharacter(monsterName);
+        setCurrentLocation(path[i]);
         cout << monsterName << " moved to " << path[i]->getName() << ".\n";
 
         auto newLocationCharacters = path[i]->getCharacters();

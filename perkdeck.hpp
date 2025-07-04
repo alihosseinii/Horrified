@@ -20,7 +20,6 @@ public:
     void shuffle();
     PerkCard drawRandomCard();
     bool isEmpty() const;
-    void printDeckSummary() const;
 };
 
-#endif 
+#endif

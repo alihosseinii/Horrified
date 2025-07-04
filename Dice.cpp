@@ -1,7 +1,9 @@
-#include "Dice.hpp"
+#include "dice.hpp"
 #include <chrono>
 
-Dice::Dice() : rng(chrono::steady_clock::now().time_since_epoch().count()), dist(0, 5) {} 
+using namespace std;
+
+Dice::Dice() : rng(chrono::steady_clock::now().time_since_epoch().count()), dist(0, 5) {}
 
 DiceFace Dice::roll() {
     int roll = dist(rng);

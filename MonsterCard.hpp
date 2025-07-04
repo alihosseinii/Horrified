@@ -1,6 +1,8 @@
-#include <iostream>
+#ifndef MONSTERCARD_HPP
+#define MONSTERCARD_HPP
 
-using namespace std;
+#include <iostream>
+#include <vector>
 
 enum class MonsterType {
     Dracula,
@@ -8,28 +10,26 @@ enum class MonsterType {
     FrenziedMonster
 };
 
-struct strike
-{
+struct Strike {
     MonsterType monster;
-    int movecount;
-    int dicecount;
+    int moveCount;
+    int diceCount;
 };
 
 class MonsterCard {
 private:
-    string name;
+    std::string name;
     int itemCount;
-    string eventText;
-    vector<strike> strikeList;
+    std::string eventText;
+    std::vector<Strike> strikeList;
 
 public:
-    MonsterCard(const string& name,
-                int itemCount,
-                const string& eventText,
-                const vector<strike>& strikeList);
+    MonsterCard(const std::string& name, int itemCount, const std::string& eventText, const std::vector<Strike>& strikeList);
 
-    string getname() const;
+    std::string getName() const;
     int getItemCount() const;
-    string getEventText() const;
-    vector<strike> getStrikeList() const;
+    std::string getEventText() const;
+    std::vector<Strike> getStrikeList() const;
 };
+
+#endif

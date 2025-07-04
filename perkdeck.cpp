@@ -40,10 +40,3 @@ PerkCard PerkDeck::drawRandomCard() {
 bool PerkDeck::isEmpty() const {
     return cards.empty();
 }
-
-void PerkDeck::printDeckSummary() const {
-    cout << "Perk Deck contains " << cards.size() << " cards:\n";
-    for (const auto& card : cards) {
-        cout << "- " << PerkCard::perkTypeToString(card.getType()) << ": " << card.getDescription() << "\n";
-    }
-} 

@@ -1,10 +1,13 @@
-#include "MonsterCard.hpp"
-MonsterCard::MonsterCard(const string& name, int itemCount, const string& eventText, const vector<strike>& strikeList) :name(name), itemCount(itemCount), eventText(eventText), strikeList(strikeList) {}
+#include "monstercard.hpp"
 
-string MonsterCard::getname() const { return name; }
+using namespace std;
+
+MonsterCard::MonsterCard(const std::string& name, int itemCount, const string& eventText, const vector<Strike>& strikeList) : name(name), itemCount(itemCount), eventText(eventText), strikeList(strikeList) {}
+
+string MonsterCard::getName() const { return name; }
 
 int MonsterCard::getItemCount() const { return itemCount; }
 
 string MonsterCard::getEventText() const { return eventText; }
 
-vector<strike> MonsterCard::getStrikeList() const { return strikeList; }
+vector<Strike> MonsterCard::getStrikeList() const { return strikeList; }

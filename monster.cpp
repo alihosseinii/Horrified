@@ -47,9 +47,9 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
         }
     }
 
-    using Path = std::vector<std::shared_ptr<Location>>;
-    std::queue<Path> q;
-    std::unordered_set<std::string> visited;
+    using Path = vector<shared_ptr<Location>>;
+    queue<Path> q;
+    unordered_set<string> visited;
     q.push({currentLocation});
     visited.insert(currentLocation->getName());
 
@@ -83,8 +83,8 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
         return;
     }
 
-    int stepsToMove = std::min(stepNumber, static_cast<int>(shortestPathToTarget.size()) - 1);
-    std::shared_ptr<Location> newLocation = shortestPathToTarget[stepsToMove];
+    int stepsToMove = min(stepNumber, static_cast<int>(shortestPathToTarget.size()) - 1);
+    shared_ptr<Location> newLocation = shortestPathToTarget[stepsToMove];
 
     for (int i = 1; i <= stepsToMove; ++i) {
         auto loc = shortestPathToTarget[i];
@@ -103,8 +103,8 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
     }
 
     currentLocation->removeCharacter(monsterName);
-    newLocation->addCharacter(monsterName);
     setCurrentLocation(newLocation);
+    newLocation->addCharacter(monsterName);
     cout << monsterName << " moved to " << newLocation->getName() << ".\n";
 }
 
@@ -160,7 +160,7 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
                 cout << "Enter item number to use (0 to cancel): ";
                 int choice;
                 cin >> choice;
-                cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 if (choice > 0 && choice <= static_cast<int>(items.size())) {
                     cout << targetHero->getPlayerName() << " used " << items[choice-1].getItemName() << " to defend!\n";
                     targetHero->removeItem(choice - 1);
@@ -172,9 +172,9 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
         }
         try {
             auto hospital = map.getLocation("Hospital");
+            targetHero->setCurrentLocation(hospital);
             currentLocation->removeCharacter(targetHero->getHeroName());
             hospital->addCharacter(targetHero->getHeroName());
-            targetHero->setCurrentLocation(hospital);
             cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ") was wounded and moved to Hospital.\n";
             terrorTracker.increase();
             cout << "Terror level increased to " << terrorTracker.getLevel() << " due to the attack!\n";
@@ -191,4 +191,17 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
         return true;
     }
     return false;
+}
+
+void Monster::moveTwoSteps() {
+    auto loc = getCurrentLocation();
+    for (int step = 0; step < 2; ++step) {
+        const auto& neighbors = loc->getNeighbors();
+        if (neighbors.empty()) break;
+        auto nextLoc = neighbors[0];
+        setCurrentLocation(nextLoc);
+        loc->removeCharacter(getMonsterName());
+        nextLoc->addCharacter(getMonsterName());
+        loc = nextLoc;
+    }
 }

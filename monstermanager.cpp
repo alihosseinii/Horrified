@@ -203,11 +203,22 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
             auto closerLocation = map.findCloserLocation(closestLocation, draculaLocation);
             if (closerLocation != nullptr) {
                 try {
+                if (closestCharacter == "Archeologist") {
+                    archeologist->setCurrentLocation(closerLocation);
+                    archeologist->getCurrentLocation()->removeCharacter("Archeologist");
+                    closerLocation->addCharacter("Archeologist");
+                    cout << archeologist->getPlayerName() << " (Archeologist) moved to " << closerLocation->getName() << ".\n";
+                }
+                if (closestCharacter == "Mayor") {
+                    mayor->setCurrentLocation(closerLocation);
+                    mayor->getCurrentLocation()->removeCharacter("Mayor");
+                    closerLocation->addCharacter("Mayor");
+                    cout << mayor->getPlayerName() << " (Mayor) moved to " << closerLocation->getName() << ".\n";
+                }
                     auto villager = villagerManager.getVillager(closestCharacter);
                     villager->moveByMonster(closerLocation);
                 } catch (const exception& e) {
-                    closestLocation->removeCharacter(closestCharacter);
-                    closerLocation->addCharacter(closestCharacter);
+                    cout << e.what() << endl;
                 }
             }
         }
@@ -223,9 +234,10 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
     bool monsterPhaseEnding = false;
     int invisibleManPowerDice = 0;
     
+    Strike strike;
     for (size_t i = 0; i < monsterCard.getStrikeList().size(); ++i) {
         if (monsterPhaseEnding) break;
-        Strike strike = monsterCard.getStrikeList().at(i);
+        strike = monsterCard.getStrikeList().at(i);
         Monster* monster = nullptr;
         switch (strike.monster) {
             case MonsterType::Dracula:
@@ -241,6 +253,8 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
 
         if (monster != nullptr) {
             monster->moveToNearestCharacter("*", strike.moveCount);
+        } else {
+            continue;
         }
 
         Dice dice;
@@ -307,11 +321,11 @@ void MonsterManager::moveVillagersCloserToSafePlaces(Map& map, VillagerManager& 
     };
     
     for (const auto& [locName, location] : map.locations) {
-        const auto& chars = location->getCharacters();
+        auto chars = location->getCharacters();
         for (const auto& character : chars) {
             auto it = safePlaces.find(character);
             if (it == safePlaces.end()) continue;
-            const std::string& safePlace = it->second;
+            const string& safePlace = it->second;
             try {
                 auto villager = villagerManager.getVillager(character);
                 auto currentLocation = villager->getCurrentLocation();
@@ -324,6 +338,7 @@ void MonsterManager::moveVillagersCloserToSafePlaces(Map& map, VillagerManager& 
                     villager->moveByMonster(closerLocation); 
                 }
             } catch (const exception& e) {
+                cerr << "Error moving villager " << character << ": " << e.what() << endl;
                 continue;
             }
         }

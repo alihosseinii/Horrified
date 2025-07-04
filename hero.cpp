@@ -160,8 +160,8 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
     }
 
     try {
-        setCurrentLocation(newLocation);
         currentLocation->removeCharacter(heroName);
+        setCurrentLocation(newLocation);
         newLocation->addCharacter(heroName);
     
         cout << heroName << " (" << playerName << ") moved to " << currentLocation->getName() << ".\n";
@@ -177,8 +177,8 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
         throw invalid_argument("No remaining actions.");
     }
 
-    std::vector<std::shared_ptr<Villager>> guidableVillagers;
-    std::vector<std::vector<std::shared_ptr<Location>>> guidableMoves;
+    vector<shared_ptr<Villager>> guidableVillagers;
+    vector<vector<shared_ptr<Location>>> guidableMoves;
     auto heroLoc = currentLocation;
     const auto& heroNeighbors = heroLoc->getNeighbors();
 
@@ -188,7 +188,7 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
         for (const auto& character : characters) {
             if (character == "Dracula" || character == "Invisible man" || character == "Archeologist" || character == "Mayor") continue;
 
-            std::vector<std::shared_ptr<Location>> possibleMoves;
+            vector<shared_ptr<Location>> possibleMoves;
 
             if (loc->getName() == heroLoc->getName()) {
                 for (const auto& neighbor : heroNeighbors) {
@@ -239,7 +239,7 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
 
     auto chosenVillager = guidableVillagers[villagerIndex - 1];
     auto& possibleLocations = guidableMoves[villagerIndex - 1];
-    std::shared_ptr<Location> chosenLocation;
+    shared_ptr<Location> chosenLocation;
 
     if (possibleLocations.size() == 1) {
         chosenLocation = possibleLocations[0];
@@ -296,7 +296,7 @@ void Hero::pickUp() {
     while (true) {
         cout << "Enter the number of the item to pick up (" << exitChoice << " to exit): ";
         cin >> choice;
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         if (choice > exitChoice || choice <= 0) {
             cout << "Invalid answer. Please try again." << endl;
             continue;
@@ -320,21 +320,8 @@ void Hero::addPerkCard(const PerkCard& card) {
     perkCards.push_back(card);
 }
 
-const std::vector<PerkCard>& Hero::getPerkCards() const {
+const vector<PerkCard>& Hero::getPerkCards() const {
     return perkCards;
-}
-
-void Hero::displayPerkCards() const {
-    if (perkCards.empty()) {
-        cout << playerName << " (" << heroName << ") has no perk cards.\n";
-        return;
-    }
-    
-    cout << playerName << " (" << heroName << ") has " << perkCards.size() << " perk card(s):\n";
-    for (size_t i = 0; i < perkCards.size(); ++i) {
-        cout << i + 1 << ". " << PerkCard::perkTypeToString(perkCards[i].getType()) 
-             << ": " << perkCards[i].getDescription() << "\n";
-    }
 }
 
 bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck, InvisibleMan* invisibleMan, ItemBag* itemBag, Hero* otherHero, Dracula* dracula) {
@@ -360,8 +347,8 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
                 
                 if (invisibleMan != nullptr) {
                     auto currentLocation = invisibleMan->getCurrentLocation();
-                    currentLocation->removeCharacter("Invisible man");
                     invisibleMan->setCurrentLocation(targetLocation);
+                    currentLocation->removeCharacter("Invisible man");
                     targetLocation->addCharacter("Invisible man");
                     cout << "Invisible man moved to " << targetLocation->getName() << ".\n";
                 } else {
@@ -413,17 +400,17 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
             cout << "Each monster moves 2 locations.\n";
             
             if (dracula != nullptr && dracula->getCurrentLocation() != nullptr) {
-                dracula->moveToNearestCharacter("*", 2);
+                dracula->moveTwoSteps();
             }
             
             if (invisibleMan != nullptr && invisibleMan->getCurrentLocation() != nullptr) {
-                invisibleMan->moveToNearestCharacter("*", 2);
+                invisibleMan->moveTwoSteps();
             }
             break;
         }
         
         case PerkType::Hurry: {
-            cout << "Each hero moves up to 2 locations.\n";
+            cout << "Each hero moves 2 locations.\n";
             this->moveTwoSteps();
             if (otherHero) otherHero->moveTwoSteps();
             break;
@@ -473,7 +460,7 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
             }
         }
         if (eligibleClues.empty()) {
-            throw invalid_argument("You have no eligible clue items to deliver at the Precinct.");
+            throw invalid_argument("You have no eligible evidence items to deliver at the Precinct.");
         }
         cout << "Choose an item to use against Invisible man:\n";
         for (size_t i = 0; i < eligibleClues.size(); ++i) {
@@ -482,7 +469,7 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
         int choice;
         cout << "Enter your choice: ";
         cin >> choice;
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         if (choice > 0 && choice <= static_cast<int>(eligibleClues.size())) {
             const auto& selected = eligibleClues[choice - 1];
             taskBoard.deliverClue(selected.second.getLocation()->getName());
@@ -518,7 +505,7 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
     int choice;
     cout << "Enter your choice: ";
     cin >> choice;
-    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     if (choice > 0 && choice <= static_cast<int>(redItems.size())) {
         const auto& selectedItem = redItems[choice - 1];
         taskBoard.addStrengthToCoffin(currentLocation->getName(), selectedItem.second.getPower());
@@ -568,7 +555,7 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
         int choice;
         cout << "Enter your choice: ";
         cin >> choice;
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         if (choice > 0 && choice <= static_cast<int>(redItems.size())) {
             const auto& selectedItem = redItems[choice - 1];
             taskBoard.addStrengthToInvisibleMan(selectedItem.second.getPower());
@@ -629,9 +616,9 @@ void Hero::moveTwoSteps() {
         const auto& neighbors = loc->getNeighbors();
         if (neighbors.empty()) break;
         auto nextLoc = neighbors[0];
+        setCurrentLocation(nextLoc);
         loc->removeCharacter(getHeroName());
         nextLoc->addCharacter(getHeroName());
-        setCurrentLocation(nextLoc);
         loc = nextLoc;
     }
 }

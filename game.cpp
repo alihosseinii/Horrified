@@ -43,7 +43,7 @@ void Game::play() {
     cin >> player1GarlicTime;
     cout << "Player 2 (" << player2Name << "): ";
     cin >> player2GarlicTime;
-    cin.ignore();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
     if (player1GarlicTime > player2GarlicTime) {
         startingPlayerName = player2Name;
@@ -60,7 +60,7 @@ void Game::play() {
         cin >> startingPlayerHero;
         startingPlayerHero = toSentenceCase(startingPlayerHero);
         if (startingPlayerHero == "Archeologist" || startingPlayerHero == "Mayor") {
-            cout << startingPlayerName << " has chosen to play as the " << startingPlayerHero << "." << endl;
+            cout << endl << startingPlayerName << " has chosen to play as the " << startingPlayerHero << "." << endl;
             cout << otherPlayerName << " will play as the " << ((startingPlayerHero == "Archeologist") ? "Mayor" : "Archeologist") << ".\n"; 
             break;
         }
@@ -128,8 +128,8 @@ void Game::play() {
 
     FrenzyMarker frenzyMarker(static_cast<Dracula*>(dracula.get()), static_cast<InvisibleMan*>(invisibleMan.get()));
 
-    cin.ignore();
-    cout << "Game setup complete! Let the horror begin!\n";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cout << "\nGame setup complete! Let the horror begin!\n";
     cout << "Press Enter to continue..."; 
     cin.get();
 
@@ -150,7 +150,6 @@ void Game::play() {
             break;
         }
 
-        tui.clearScreen();
         string choice;
         while (currentHero->getRemainingActions() > 0) {
             cout << "Press Enter to continue..."; 
@@ -183,7 +182,7 @@ void Game::play() {
                     int locationChoice;
                     cout << "Choose location (1-" << neighbors.size() << "): ";
                     cin >> locationChoice;
-                    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     if (locationChoice > 0 && locationChoice <= static_cast<int>(neighbors.size())) {
                         currentHero->move(neighbors[locationChoice - 1], villagerManager, &perkDeck);
                     } else {
@@ -204,14 +203,18 @@ void Game::play() {
                     bool draculaDead = taskBoard.isDraculaDefeated();
                     bool invisibleManDead = taskBoard.isInvisibleManDefeated();
                     if (draculaDead) {
-                        dracula->getCurrentLocation()->removeCharacter("Dracula");
-                        dracula->setCurrentLocation(nullptr);
-                        frenzyMarker.advance(dracula.get(), invisibleMan.get());
+                        if (dracula->getCurrentLocation() != nullptr) {
+                            dracula->getCurrentLocation()->removeCharacter("Dracula");
+                            dracula->setCurrentLocation(nullptr);
+                            frenzyMarker.advance(dracula.get(), invisibleMan.get());
+                        }
                     }
                     if (invisibleManDead) {
-                        invisibleMan->getCurrentLocation()->removeCharacter("Invisible man");
-                        invisibleMan->setCurrentLocation(nullptr);
-                        frenzyMarker.advance(dracula.get(), invisibleMan.get());
+                        if (invisibleMan->getCurrentLocation() != nullptr) {
+                            invisibleMan->getCurrentLocation()->removeCharacter("Invisible man");
+                            invisibleMan->setCurrentLocation(nullptr);
+                            frenzyMarker.advance(dracula.get(), invisibleMan.get());
+                        }
                     }
                     if (draculaDead && invisibleManDead) {
                         cout << "Heroes win! Both Dracula and Invisible man are defeated!" << endl;

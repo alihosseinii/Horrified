@@ -103,8 +103,8 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
     }
 
     currentLocation->removeCharacter(monsterName);
-    setCurrentLocation(newLocation);
     newLocation->addCharacter(monsterName);
+    setCurrentLocation(newLocation);
     cout << monsterName << " moved to " << newLocation->getName() << ".\n";
 }
 
@@ -172,9 +172,9 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
         }
         try {
             auto hospital = map.getLocation("Hospital");
-            targetHero->setCurrentLocation(hospital);
             currentLocation->removeCharacter(targetHero->getHeroName());
             hospital->addCharacter(targetHero->getHeroName());
+            targetHero->setCurrentLocation(hospital);
             cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ") was wounded and moved to Hospital.\n";
             terrorTracker.increase();
             cout << "Terror level increased to " << terrorTracker.getLevel() << " due to the attack!\n";
@@ -199,9 +199,9 @@ void Monster::moveTwoSteps() {
         const auto& neighbors = loc->getNeighbors();
         if (neighbors.empty()) break;
         auto nextLoc = neighbors[0];
-        setCurrentLocation(nextLoc);
         loc->removeCharacter(getMonsterName());
         nextLoc->addCharacter(getMonsterName());
+        setCurrentLocation(nextLoc);
         loc = nextLoc;
     }
 }

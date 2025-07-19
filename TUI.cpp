@@ -1,10 +1,10 @@
 #include "TUI.hpp"
 #include "item.hpp"
-#include "Map.hpp"
-#include "Location.hpp"
-#include "Hero.hpp"
-#include "Monster.hpp"
-#include "TaskBoard.hpp"
+#include "map.hpp"
+#include "location.hpp"
+#include "hero.hpp"
+#include "monster.hpp"
+#include "taskboard.hpp"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>

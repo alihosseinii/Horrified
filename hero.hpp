@@ -9,7 +9,7 @@
 #include "villagermanager.hpp"
 #include "item.hpp"
 #include "perkcard.hpp"
-#include "TaskBoard.hpp"
+#include "taskboard.hpp"
 
 class PerkDeck;
 class InvisibleMan;

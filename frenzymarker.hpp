@@ -14,6 +14,10 @@ public:
 
     Monster* getCurrentFrenzied() const;
     void advance(Monster* dracula, Monster* invisibleMan);
+    
+    int getFrenzyLevel() const;
+    
+    void setFrenzyLevel(int level);
 };
 
 #endif

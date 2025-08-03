@@ -16,7 +16,7 @@ TaskBoard::TaskBoard() {
     invisibleManCluesDelivered["Institute"] = false;
 }
 
-void TaskBoard::addStrengthToCoffin(const std::string& location, int strength) {
+void TaskBoard::addStrengthToCoffin(const string& location, int strength) {
     auto it = draculaCoffins.find(location);
     if (it != draculaCoffins.end() && !it->second.completed) {
         it->second.currentStrength += strength;
@@ -26,7 +26,7 @@ void TaskBoard::addStrengthToCoffin(const std::string& location, int strength) {
     }
 }
 
-bool TaskBoard::isCoffinLocation(const std::string& location) const {
+bool TaskBoard::isCoffinLocation(const string& location) const {
     return draculaCoffins.count(location) > 0;
 }
 
@@ -60,23 +60,23 @@ bool TaskBoard::isDraculaDefeated() const {
     return draculaDefeat.completed;
 }
 
-std::string TaskBoard::getDraculaTaskStatus() const {
-    std::string status = "Dracula Coffins:\n";
+string TaskBoard::getDraculaTaskStatus() const {
+    string status = "Dracula Coffins:\n";
     for (const auto& [loc, task_status] : draculaCoffins) {
-        status += "- " + loc + ": " + std::to_string(task_status.currentStrength) + "/6 Strength " 
+        status += "- " + loc + ": " + to_string(task_status.currentStrength) + "/6 Strength " 
                   + (task_status.completed ? "(Destroyed)" : "(Active)") + "\n";
     }
-    status += "Defeat Dracula: " + std::to_string(draculaDefeat.currentStrength) + "/6 Strength "
+    status += "Defeat Dracula: " + to_string(draculaDefeat.currentStrength) + "/6 Strength "
               + (draculaDefeat.completed ? "(Defeated)" : "") + "\n";
     return status;
 }
 
-bool TaskBoard::isClueDelivered(const std::string& location) const {
+bool TaskBoard::isClueDelivered(const string& location) const {
     auto it = invisibleManCluesDelivered.find(location);
     return it != invisibleManCluesDelivered.end() && it->second;
 }
 
-void TaskBoard::deliverClue(const std::string& location) {
+void TaskBoard::deliverClue(const string& location) {
     if (invisibleManCluesDelivered.count(location)) {
         invisibleManCluesDelivered[location] = true;
     }
@@ -120,4 +120,44 @@ std::string TaskBoard::getInvisibleManClueStatus() const {
     status += "Defeat Invisible Man: " + std::to_string(invisibleManDefeat.currentStrength) + "/9 Red Strength "
               + (invisibleManDefeated ? "(Defeated)" : "") + "\n";
     return status;
+}
+
+const unordered_map<string, TaskStatus>& TaskBoard::getDraculaCoffins() const {
+    return draculaCoffins;
+}
+
+const unordered_map<string, bool>& TaskBoard::getInvisibleManCluesDelivered() const {
+    return invisibleManCluesDelivered;
+}
+
+const TaskStatus& TaskBoard::getDraculaDefeat() const {
+    return draculaDefeat;
+}
+
+const TaskStatus& TaskBoard::getInvisibleManDefeat() const {
+    return invisibleManDefeat;
+}
+
+bool TaskBoard::getInvisibleManDefeated() const {
+    return invisibleManDefeated;
+}
+
+void TaskBoard::setDraculaCoffins(const std::unordered_map<std::string, TaskStatus>& coffins) {
+    draculaCoffins = coffins;
+}
+
+void TaskBoard::setInvisibleManCluesDelivered(const std::unordered_map<std::string, bool>& clues) {
+    invisibleManCluesDelivered = clues;
+}
+
+void TaskBoard::setDraculaDefeat(const TaskStatus& defeat) {
+    draculaDefeat = defeat;
+}
+
+void TaskBoard::setInvisibleManDefeat(const TaskStatus& defeat) {
+    invisibleManDefeat = defeat;
+}
+
+void TaskBoard::setInvisibleManDefeated(bool defeated) {
+    invisibleManDefeated = defeated;
 }

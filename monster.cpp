@@ -42,7 +42,7 @@ void Monster::setCurrentLocation(shared_ptr<Location> currentLocation) {
 
 void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumber) {
     for (const auto& c : currentLocation->getCharacters()) {
-        if (c != monsterName && c != "Invisible man" && c != "Dracula") {
+        if (c != "Invisible man" && c != "Dracula") {
             return;
         }
     }
@@ -67,7 +67,7 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
             Path newPath = path;
             newPath.push_back(neighbor);
             for (const auto& c : neighbor->getCharacters()) {
-                if (c != monsterName && c != "Invisible man" && c != "Dracula") {
+                if (c != "Invisible man" && c != "Dracula") {
                     shortestPathToTarget = newPath;
                     found = true;
                     break;
@@ -90,7 +90,7 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
         auto loc = shortestPathToTarget[i];
         bool hasTarget = false;
         for (const auto& c : loc->getCharacters()) {
-            if (c != monsterName && c != "Invisible man" && c != "Dracula") {
+            if (c != "Invisible man" && c != "Dracula") {
                 newLocation = loc;
                 stepsToMove = i;
                 hasTarget = true;
@@ -108,7 +108,7 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
     cout << monsterName << " moved to " << newLocation->getName() << ".\n";
 }
 
-bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTracker, Map& map) {
+bool Monster::attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map) {
     auto currentLocationCharacters = currentLocation->getCharacters();
     Hero* targetHero = nullptr;
     string targetVillager = "";
@@ -120,13 +120,20 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
         } else if (character == "Mayor") {
             targetHero = mayor;
             break;
+        } else if (character == "Courier") {
+            targetHero = courier;
+            break;
+        } else if (character == "Scientist") {
+            targetHero = scientist;
+            break;
         }
     }
     
     if (!targetHero) {
         for (const auto& character : currentLocationCharacters) {
             if (character != "Invisible man" && character != "Dracula" && 
-                character != "Archeologist" && character != "Mayor") {
+                character != "Archeologist" && character != "Mayor" &&
+                character != "Courier" && character != "Scientist") {
                 targetVillager = character;
                 break;
             }
@@ -147,22 +154,35 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTrack
             while (true) {
                 cout << "Do you want to use an item to defend yourself? (Yes/No): ";
                 getline(cin, answer);
-                if (answer == "Yes" || answer == "yes" || answer == "No" || answer == "no") break;
+                answer = toSentenceCase(answer);
+                if (answer == "Yes" || answer == "No") break;
                 cout << "Invalid input. Please enter Yes or No.\n";
             }
-            if (answer == "Yes" || answer == "yes") {
+            if (answer == "Yes") {
                 cout << "Available items:\n";
                 for (size_t i = 0; i < items.size(); ++i) {
                     cout << i + 1 << ". " << items[i].getItemName() << " (" 
                          << Item::colorToString(items[i].getColor()) << ", Power: " 
                          << items[i].getPower() << ")\n";
                 }
-                cout << "Enter item number to use (0 to cancel): ";
                 int choice;
-                cin >> choice;
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                while (true) {
+                    cout << "Enter item number to use (0 to cancel): ";
+                    cin >> choice;
+                    if (cin.fail()) {
+                        cout << "Invalid input. Please enter a number.\n";
+                        cin.clear(); 
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                        continue;
+                    }
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+                }
                 if (choice > 0 && choice <= static_cast<int>(items.size())) {
-                    cout << targetHero->getPlayerName() << " used " << items[choice-1].getItemName() << " to defend!\n";
+                    if (targetHero->getHeroName() == "Scientist") {
+                        targetHero->ability(choice - 1);
+                    }
+                    cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ") used " << items[choice-1].getItemName() << " to defend!\n";
                     targetHero->removeItem(choice - 1);
                     return false;
                 }

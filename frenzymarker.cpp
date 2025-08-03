@@ -4,9 +4,18 @@
 using namespace std;
 
 FrenzyMarker::FrenzyMarker(Monster* dracula, Monster* invisibleMan) {
-    monsterOrder.push_back(dracula);
-    monsterOrder.push_back(invisibleMan);
-    currentFrenzied = dracula;
+    if (dracula && dracula->getCurrentLocation()) {
+        monsterOrder.push_back(dracula);
+    }
+    if (invisibleMan && invisibleMan->getCurrentLocation()) {
+        monsterOrder.push_back(invisibleMan);
+    }
+    
+    if (!monsterOrder.empty()) {
+        currentFrenzied = monsterOrder.front();
+    } else {
+        currentFrenzied = nullptr;
+    }
 }
 
 Monster* FrenzyMarker::getCurrentFrenzied() const {
@@ -38,5 +47,30 @@ void FrenzyMarker::advance(Monster* dracula, Monster* invisibleMan) {
         currentFrenzied = monsterOrder.front();
     } else {
         currentFrenzied = *it;
+    }
+}
+
+int FrenzyMarker::getFrenzyLevel() const {
+    if (currentFrenzied == nullptr) {
+        return 0;
+    }
+    
+    auto it = find(monsterOrder.begin(), monsterOrder.end(), currentFrenzied);
+    if (it == monsterOrder.end()) {
+        return 0;
+    }
+    
+    return distance(monsterOrder.begin(), it) + 1;
+}
+
+void FrenzyMarker::setFrenzyLevel(int level) {
+    if (level < 0 || level > static_cast<int>(monsterOrder.size())) {
+        return;
+    }
+    
+    if (level == 0) {
+        currentFrenzied = nullptr;
+    } else {
+        currentFrenzied = monsterOrder[level - 1];
     }
 }

@@ -41,9 +41,10 @@ bool PerkDeck::isEmpty() const {
     return cards.empty();
 }
 
-void PerkDeck::printDeckSummary() const {
-    cout << "Perk Deck contains " << cards.size() << " cards:\n";
-    for (const auto& card : cards) {
-        cout << "- " << PerkCard::perkTypeToString(card.getType()) << ": " << card.getDescription() << "\n";
-    }
-} 
+const vector<PerkCard>& PerkDeck::getCards() const {
+    return cards;
+}
+
+void PerkDeck::setCards(const vector<PerkCard>& newCards) {
+    cards = newCards;
+}

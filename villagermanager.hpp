@@ -11,6 +11,9 @@ class VillagerManager {
 public:
     void addVillager(const std::string& villagerName, std::shared_ptr<Location> location);
     std::shared_ptr<Villager> getVillager(const std::string& villagerName) const;
+    const std::unordered_map<std::string, std::shared_ptr<Villager>>& getAllVillagers() const;
+    
+    void moveVillager(const std::string& villagerName, std::shared_ptr<Location> location);
 
 private:
     std::unordered_map<std::string, std::shared_ptr<Villager>> villagerMap;

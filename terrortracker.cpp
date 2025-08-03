@@ -11,3 +11,9 @@ void TerrorTracker::increase() {
 int TerrorTracker::getLevel() const {
     return level;
 }
+
+void TerrorTracker::setLevel(int newLevel) {
+    if (newLevel >= 0 && newLevel <= 5) {
+        level = newLevel;
+    }
+}

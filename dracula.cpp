@@ -16,8 +16,9 @@ void Dracula::power(Hero* hero, TerrorTracker& terrorTracker) {
         heroLocation->removeCharacter(hero->getHeroName());
         currentLocation->addCharacter(hero->getHeroName());
         hero->setCurrentLocation(currentLocation);
+        
+        cout << hero->getPlayerName() << " (" << hero->getHeroName() << ") moved to " << hero->getCurrentLocation()->getName() << ".\n";
     } catch (const exception& e) {
         cout << e.what() << endl;
     }
-    cout << hero->getPlayerName() << " (" << hero->getHeroName() << ") moved to " << hero->getCurrentLocation()->getName() << ".\n";
 }

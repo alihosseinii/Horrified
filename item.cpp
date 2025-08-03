@@ -1,5 +1,6 @@
 #include "item.hpp"
 #include "location.hpp"
+#include "map.hpp"
 #include <random>
 #include <algorithm>
 #include <stdexcept>
@@ -21,6 +22,10 @@ int Item::getPower() const {
 
 string Item::getItemName() const {
     return itemName;
+}
+
+void Item::setItemPower(int newPower) {
+    this->power = newPower;
 }
 
 shared_ptr<Location> Item::getLocation() const {
@@ -84,7 +89,7 @@ ItemBag::ItemBag(Map& map) {
     items.emplace_back("Telescope", ItemColor::Blue, 2, map.getLocation("Mansion"));
     items.emplace_back("Searchlight", ItemColor::Blue, 2, map.getLocation("Precinct"));
     items.emplace_back("Searchlight", ItemColor::Blue, 2, map.getLocation("Precinct"));
-    items.emplace_back("Experiment", ItemColor::Blue, 2,map.getLocation("Laboratory"));
+    items.emplace_back("Experiment", ItemColor::Blue, 2, map.getLocation("Laboratory"));
     items.emplace_back("Experiment", ItemColor::Blue, 2, map.getLocation("Laboratory"));
     items.emplace_back("Analysis", ItemColor::Blue, 2, map.getLocation("Institute"));
     items.emplace_back("Analysis", ItemColor::Blue, 2, map.getLocation("Institute"));
@@ -159,7 +164,6 @@ void ItemBag::refillItems(Map& map) {
     shuffleItems();
 }
 
-
 Item ItemBag::drawRandomItem(Map& map) {
     if (items.empty()) {
         refillItems(map);
@@ -170,5 +174,11 @@ Item ItemBag::drawRandomItem(Map& map) {
     items.pop_back();
 
     auto location = map.getLocation(item.getLocation()->getName());
-    location->addItem(item);
+    location->addItem(item); 
+
+    return item;
+}
+
+const vector<Item>& ItemBag::getItems() const {
+    return items;
 }

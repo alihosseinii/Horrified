@@ -10,6 +10,7 @@ public:
     Archeologist(const std::string& playerName, std::shared_ptr<Location> startingLocation);
 
     void specialAction() override;
+    void ability(size_t index) override;
 };
 
 #endif

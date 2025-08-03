@@ -39,6 +39,18 @@ public:
 
     std::string getDraculaTaskStatus() const;
     std::string getInvisibleManClueStatus() const;
+    
+    const std::unordered_map<std::string, TaskStatus>& getDraculaCoffins() const;
+    const std::unordered_map<std::string, bool>& getInvisibleManCluesDelivered() const;
+    const TaskStatus& getDraculaDefeat() const;
+    const TaskStatus& getInvisibleManDefeat() const;
+    bool getInvisibleManDefeated() const;
+    
+    void setDraculaCoffins(const std::unordered_map<std::string, TaskStatus>& coffins);
+    void setInvisibleManCluesDelivered(const std::unordered_map<std::string, bool>& clues);
+    void setDraculaDefeat(const TaskStatus& defeat);
+    void setInvisibleManDefeat(const TaskStatus& defeat);
+    void setInvisibleManDefeated(bool defeated);
 };
 
 #endif

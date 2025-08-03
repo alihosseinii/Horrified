@@ -11,6 +11,8 @@
 #include "hero.hpp"
 #include "archeologist.hpp"
 #include "mayor.hpp"
+#include "courier.hpp"
+#include "scientist.hpp"
 
 class TerrorTracker;
 class Map;
@@ -21,7 +23,7 @@ public:
     virtual ~Monster() = default;
 
     virtual void power(Hero* hero, TerrorTracker& terrorTracker) = 0;
-    bool attack(Hero* archeologist, Hero* mayor, TerrorTracker& terrorTracker, Map& map);
+    bool attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map);
 
     std::string getMonsterName() const;
     std::shared_ptr<Location> getCurrentLocation() const;

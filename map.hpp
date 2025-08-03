@@ -1,8 +1,7 @@
 #ifndef MAP_HPP
 #define MAP_HPP
 
-class Location;
-
+#include "location.hpp"
 #include <unordered_map>
 #include <memory>
 #include <string>

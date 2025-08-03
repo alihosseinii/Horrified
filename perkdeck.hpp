@@ -20,6 +20,10 @@ public:
     void shuffle();
     PerkCard drawRandomCard();
     bool isEmpty() const;
+    
+    const vector<PerkCard>& getCards() const;
+    
+    void setCards(const vector<PerkCard>& newCards);
 };
 
 #endif

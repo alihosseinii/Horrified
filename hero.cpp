@@ -124,17 +124,17 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
     }
 
     auto characters = currentLocation->getCharacters();
-    string answer;
     bool characterExists = false;
     if (!characters.empty()) {
         for (const auto& character : characters) {
-            if (character == "Archeologist" || character == "Mayor" || character == "Dracula" || character == "Invisible man") {
+            if (character == "Archeologist" || character == "Mayor" || character == "Scientist" || character == "Courier" || character == "Dracula" || character == "Invisible man") {
                 continue;
             }
             characterExists = true;
         }
     }
-
+    
+    string answer;
     if (characterExists) {
         while (true) {
             cout << "Do you want to move villager(s) with yourself(Yes or No)? ";
@@ -143,7 +143,7 @@ void Hero::move(shared_ptr<Location> newLocation, VillagerManager& villagerManag
             if (answer == "No") break;
             if (answer == "Yes") {
                 for (const auto& character : characters) {
-                    if (character == "Archeologist" || character == "Mayor" || character == "Dracula" || character == "Invisible man") {
+                    if (character == "Archeologist" || character == "Mayor" || character == "Scientist" || character == "Courier" || character == "Dracula" || character == "Invisible man") {
                         continue;
                     }
                     try {
@@ -186,7 +186,7 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
         auto loc = locPair.second;
         const auto& characters = loc->getCharacters();
         for (const auto& character : characters) {
-            if (character == "Dracula" || character == "Invisible man" || character == "Archeologist" || character == "Mayor") continue;
+            if (character == "Archeologist" || character == "Mayor" || character == "Scientist" || character == "Courier" || character == "Dracula" || character == "Invisible man") continue;
 
             vector<shared_ptr<Location>> possibleMoves;
 
@@ -227,10 +227,19 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
              << " (at " << guidableVillagers[i]->getCurrentLocation()->getName() << ")\n";
     }
 
-    cout << "Choose a villager to guide (1-" << guidableVillagers.size() << "): ";
     int villagerIndex;
-    cin >> villagerIndex;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    while (true) {
+        cout << "Choose a villager to guide (1-" << guidableVillagers.size() << "): ";
+        cin >> villagerIndex;
+        if (cin.fail()) {
+            cout << "Invalid input. Please enter a number.\n";
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        break;
+    }
 
     if (villagerIndex < 1 || villagerIndex > static_cast<int>(guidableVillagers.size())) {
         cout << "Invalid choice.\n";
@@ -243,16 +252,24 @@ void Hero::guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck)
 
     if (possibleLocations.size() == 1) {
         chosenLocation = possibleLocations[0];
-        cout << chosenVillager->getVillagerName() << " will move to " << chosenLocation->getName() << ".\n";
     } else {
         cout << "Where do you want to take " << chosenVillager->getVillagerName() << "?\n";
         for (size_t i = 0; i < possibleLocations.size(); ++i) {
             cout << i + 1 << ". " << possibleLocations[i]->getName() << "\n";
         }
-        cout << "Choose location (1-" << possibleLocations.size() << "): ";
         int locationIndex;
-        cin >> locationIndex;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        while (true) {
+            cout << "Choose location (1-" << possibleLocations.size() << "): ";
+            cin >> locationIndex;
+            if (cin.fail()) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear(); 
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                continue;
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            break;
+        }
 
         if (locationIndex < 1 || locationIndex > static_cast<int>(possibleLocations.size())) {
             cout << "Invalid choice.\n";
@@ -296,7 +313,14 @@ void Hero::pickUp() {
     while (true) {
         cout << "Enter the number of the item to pick up (" << exitChoice << " to exit): ";
         cin >> choice;
+        if (cin.fail()) {
+            cout << "Invalid input. Please enter a number.\n";
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            continue;
+        }
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
         if (choice > exitChoice || choice <= 0) {
             cout << "Invalid answer. Please try again." << endl;
             continue;
@@ -324,10 +348,10 @@ const vector<PerkCard>& Hero::getPerkCards() const {
     return perkCards;
 }
 
-bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck, InvisibleMan* invisibleMan, ItemBag* itemBag, Hero* otherHero, Dracula* dracula) {
+void Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck, InvisibleMan* invisibleMan, ItemBag* itemBag, Hero* otherHero, Dracula* dracula) {
     if (index >= perkCards.size()) {
         cout << "Invalid perk card index.\n";
-        return false;
+        return;
     }
 
     PerkCard card = perkCards[index];
@@ -352,12 +376,12 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
                     invisibleMan->setCurrentLocation(targetLocation);
                     cout << "Invisible man moved to " << targetLocation->getName() << ".\n";
                 } else {
-                    cout << "Invisible Man is dead.\n";
+                    cout << "Invisible man is defeated.\n";
                     break;
                 }
             } catch (const exception& e) {
                 cout << "Invalid location: " << e.what() << "\n";
-                break;
+                return;
             }
             break;
         }
@@ -372,6 +396,7 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
                     cout << "Two items were added!\n";
                 } catch (const exception& e) {
                     cout << e.what() << endl;
+                    return;
                 }
             }
             break;
@@ -385,6 +410,7 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
                     cout << "Two items were added!\n";
                 } catch (const exception& e) {
                     cout << e.what() << endl;
+                    return;
                 }
             }
             break;
@@ -401,10 +427,14 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
             
             if (dracula != nullptr && dracula->getCurrentLocation() != nullptr) {
                 dracula->moveTwoSteps();
+            } else {
+                cout << "Dracula is defeated.\n";
             }
             
             if (invisibleMan != nullptr && invisibleMan->getCurrentLocation() != nullptr) {
                 invisibleMan->moveTwoSteps();
+            } else {
+                cout << "Invisible man is defeated.\n";
             }
             break;
         }
@@ -418,7 +448,7 @@ bool Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
     }
     
     removePerkCard(index);
-    return true;
+    return;
 }
 
 void Hero::removePerkCard(size_t index) {
@@ -429,10 +459,13 @@ void Hero::removePerkCard(size_t index) {
 }
 
 void Hero::removeItem(size_t index) {
-    if (index >= items.size()) {
-        throw out_of_range("Item index out of range");
+    if (index < items.size()) {
+        items.erase(items.begin() + index);
     }
-    items.erase(items.begin() + index);
+}
+
+void Hero::addItem(const Item& item) {
+    items.push_back(item);
 }
 
 bool Hero::shouldSkipNextMonsterPhase() const {
@@ -443,12 +476,16 @@ void Hero::setSkipNextMonsterPhase(bool skip) {
     skipNextMonsterPhase = skip;
 }
 
-void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
+void Hero::advance(Dracula& dracula, InvisibleMan& invisibleMan, TaskBoard& taskBoard) {
     if (remainingActions <= 0) {
         throw invalid_argument("No remaining actions.");
     }
 
     if (currentLocation->getName() == "Precinct") {
+        if (invisibleMan.getCurrentLocation() == nullptr) {
+            cout << "Invisible man is defeated.\n";
+            return;
+        }
         vector<string> clueLocations = {"Inn", "Barn", "Institute", "Laboratory", "Mansion"};
         vector<pair<size_t, Item>> eligibleClues;
         for (size_t i = 0; i < items.size(); ++i) {
@@ -467,11 +504,23 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
             cout << i + 1 << ". " << eligibleClues[i].second.getItemName() << " (from " << eligibleClues[i].second.getLocation()->getName() << ")\n";
         }
         int choice;
-        cout << "Enter your choice: ";
-        cin >> choice;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        while (true) {
+            cout << "Enter your choice: ";
+            cin >> choice;
+            if (cin.fail()) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear(); 
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                continue;
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            break;
+        }
         if (choice > 0 && choice <= static_cast<int>(eligibleClues.size())) {
             const auto& selected = eligibleClues[choice - 1];
+            if (heroName == "Scientist") {
+                ability(selected.first);
+            }
             taskBoard.deliverClue(selected.second.getLocation()->getName());
             cout << playerName << "(" << heroName << ") used " << selected.second.getItemName() << " from " << selected.second.getLocation()->getName() << " on Invisible Man.\n";
             removeItem(selected.first);
@@ -486,6 +535,12 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
     if (!taskBoard.isCoffinLocation(currentLocation->getName())) {
         throw invalid_argument("You cannot use advance in " + currentLocation->getName() + ".");
     }
+
+    if (dracula.getCurrentLocation() == nullptr) {
+            cout << "Dracula is defeated.\n";
+            return;
+    }
+
     if (taskBoard.isCoffinDestroyed(currentLocation->getName())) {
         throw invalid_argument("The coffin at this location has already been destroyed.");
     }
@@ -503,11 +558,23 @@ void Hero::advance(Dracula& dracula, TaskBoard& taskBoard) {
         cout << i + 1 << ". " << redItems[i].second.getItemName() << " (Power: " << redItems[i].second.getPower() << ")\n";
     }
     int choice;
-    cout << "Enter your choice: ";
-    cin >> choice;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    while (true) {
+        cout << "Enter your choice: ";
+        cin >> choice;
+        if (cin.fail()) {
+            cout << "Invalid input. Please enter a number.\n";
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        break;
+    }
     if (choice > 0 && choice <= static_cast<int>(redItems.size())) {
         const auto& selectedItem = redItems[choice - 1];
+        if (heroName == "Scientist") {
+            ability(selectedItem.first);
+        }
         taskBoard.addStrengthToCoffin(currentLocation->getName(), selectedItem.second.getPower());
         cout << playerName << "(" << heroName << ") used " << selectedItem.second.getItemName() << " on the coffin at " << currentLocation->getName() << ".\n";
         removeItem(selectedItem.first);
@@ -551,11 +618,23 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
             cout << i + 1 << ". " << redItems[i].second.getItemName() << " (Power: " << redItems[i].second.getPower() << ")\n";
         }
         int choice;
-        cout << "Enter your choice: ";
-        cin >> choice;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        while (true) {
+            cout << "Enter your choice: ";
+            cin >> choice;
+            if (cin.fail()) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear(); 
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                continue;
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            break;
+        }
         if (choice > 0 && choice <= static_cast<int>(redItems.size())) {
             const auto& selectedItem = redItems[choice - 1];
+            if (heroName == "Scientist") {
+                ability(selectedItem.first);
+            }
             taskBoard.addStrengthToInvisibleMan(selectedItem.second.getPower());
             cout << playerName << "(" << heroName << ") used " << selectedItem.second.getItemName() << " against the Invisible man.\n";
             removeItem(selectedItem.first);
@@ -591,11 +670,23 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
         cout << i + 1 << ". " << yellowItems[i].second.getItemName() << " (Power: " << yellowItems[i].second.getPower() << ")\n";
     }
     int choice;
-    cout << "Enter your choice: ";
-    cin >> choice;
-    cin.ignore();
+    while (true) {
+        cout << "Enter your choice: ";
+        cin >> choice;
+        if (cin.fail()) {
+            cout << "Invalid input. Please enter a number.\n";
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        break;
+    }
     if (choice > 0 && choice <= static_cast<int>(yellowItems.size())) {
         const auto& selectedItem = yellowItems[choice - 1];
+        if (heroName == "Scientist") {
+            ability(selectedItem.first);
+        }
         taskBoard.addStrengthToDracula(selectedItem.second.getPower());
         cout << heroName << " used " << selectedItem.second.getItemName() << " against Dracula.\n";
         removeItem(selectedItem.first);

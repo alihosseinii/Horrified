@@ -40,3 +40,11 @@ PerkCard PerkDeck::drawRandomCard() {
 bool PerkDeck::isEmpty() const {
     return cards.empty();
 }
+
+const vector<PerkCard>& PerkDeck::getCards() const {
+    return cards;
+}
+
+void PerkDeck::setCards(const vector<PerkCard>& newCards) {
+    cards = newCards;
+}

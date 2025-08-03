@@ -66,7 +66,7 @@ void Location::removeItem(const Item& item) {
     });
 
     if (it == items.end()) {
-        throw std::invalid_argument("Item not found in this location.");
+        throw std::invalid_argument("Item not found in this location to remove.");
     }
 
     items.erase(it);
@@ -74,4 +74,8 @@ void Location::removeItem(const Item& item) {
 
 void Location::clearItems() {
     items.clear();
+}
+
+void Location::clearCharacters() {
+    characters.clear();
 }

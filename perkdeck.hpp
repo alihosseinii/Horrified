@@ -26,4 +26,4 @@ public:
     void setCards(const vector<PerkCard>& newCards);
 };
 
-#endif 
+#endif

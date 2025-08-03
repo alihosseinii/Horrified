@@ -1,8 +1,9 @@
+#ifndef DICE_HPP
+#define DICE_HPP
+
 #include <iostream>
 #include <random>
 #include <string>
-
-using namespace std;
 
 enum class DiceFace {
     Empty,
@@ -12,12 +13,13 @@ enum class DiceFace {
 
 class Dice {
 private:
-    mt19937 rng;
-    uniform_int_distribution<int> dist;
-
+    std::mt19937 rng;
+    std::uniform_int_distribution<int> dist;
 public:
     Dice();
 
     DiceFace roll();
-    static string faceToString(DiceFace face);
+    static std::string faceToString(DiceFace face);
 };
+
+#endif

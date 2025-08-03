@@ -8,5 +8,9 @@ using namespace std;
 Mayor::Mayor(const string& playerName, shared_ptr<Location> startingLocation) : Hero(playerName, "Mayor", 5, startingLocation) {}
 
 void Mayor::specialAction() {
-    cout << "Mayor has no special action." << endl;;
+    cout << "Mayor has no special action." << endl;
+}
+
+void Mayor::ability(size_t index) {
+    cout << "Mayor has no ability." << endl;
 }

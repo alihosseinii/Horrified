@@ -17,7 +17,7 @@ void InvisibleMan::power(Hero* hero, TerrorTracker& terrorTracker) {
     auto currentLocationCharacterExistence = currentLocation->getCharacters();
     if (!currentLocationCharacterExistence.empty()) {
         for (const auto& c : currentLocationCharacterExistence) {
-            if (c == "Invisible man" || c == "Dracula" || c == "Archeologist" || c == "Mayor") continue;
+            if (c == "Archeologist" || c == "Mayor" || c == "Scientist" || c == "Courier" || c == "Dracula" || c == "Invisible man") continue;
             currentLocation->removeCharacter(c);
             cout << c << " was killed by Invisible man.\n";
             terrorTracker.increase();
@@ -31,7 +31,7 @@ void InvisibleMan::power(Hero* hero, TerrorTracker& terrorTracker) {
 void InvisibleMan::moveTowardsVillager(int steps) {
     auto currentLocationCharacterExistence = currentLocation->getCharacters();
     for (const auto& c : currentLocationCharacterExistence) {
-        if (c != "Invisible man" && c != "Dracula" && c != "Archeologist" && c != "Mayor") {
+        if (c != "Invisible man" && c != "Dracula" && c != "Archeologist" && c != "Mayor" && c != "Scientist" && c != "Courier") {
             return;
         }
     }
@@ -51,7 +51,7 @@ void InvisibleMan::moveTowardsVillager(int steps) {
 
         auto characters = current->getCharacters();
         for (const auto& character : characters) {
-            if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
+            if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor" && character != "Scientist" && character != "Courier") {
                 villagerLocation = current;
                 break;
             }
@@ -59,8 +59,7 @@ void InvisibleMan::moveTowardsVillager(int steps) {
         if (villagerLocation) break;
 
         for (const auto& neighbor : current->getNeighbors()) {
-            if (!neighbor) continue;
-            if (visited.find(neighbor->getName()) != visited.end()) continue;
+            if (!neighbor || visited.count(neighbor->getName())) continue;
 
             visited.insert(neighbor->getName());
             parent[neighbor->getName()] = current;
@@ -79,17 +78,24 @@ void InvisibleMan::moveTowardsVillager(int steps) {
     reverse(path.begin(), path.end());
 
     int moveCount = min(steps, static_cast<int>(path.size()));
+    shared_ptr<Location> lastLocation = currentLocation;
+
     for (int i = 0; i < moveCount; ++i) {
         currentLocation->removeCharacter(monsterName);
         path[i]->addCharacter(monsterName);
         setCurrentLocation(path[i]);
-        cout << monsterName << " moved to " << path[i]->getName() << ".\n";
+        lastLocation = path[i];
 
-        auto newLocationCharacters = path[i]->getCharacters();
-        for (const auto& character : newLocationCharacters) {
-            if (character != "Invisible man" && character != "Dracula" && character != "Archeologist" && character != "Mayor") {
+        auto newChars = path[i]->getCharacters();
+        for (const auto& c : newChars) {
+            if (c != "Invisible man" && c != "Dracula" && c != "Archeologist" && c != "Mayor" && c != "Scientist" && c != "Courier") {
+                cout << monsterName << " moved to " << lastLocation->getName() << ".\n";
                 return;
             }
         }
+    }
+
+    if (lastLocation != currentLocation) {
+        cout << monsterName << " moved to " << lastLocation->getName() << ".\n";
     }
 }

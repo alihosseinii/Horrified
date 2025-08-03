@@ -32,11 +32,19 @@ void Archeologist::specialAction() {
         cout << i + 1 << ". " << neighborsWithItems[i]->getName() << "\n";
     }
 
-    cout << "Choose a location to pick items from (1-" << neighborsWithItems.size() << "): ";
     int locationChoice;
-    cin >> locationChoice;
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
+    while (true) {
+        cout << "Choose a location to pick items from (1-" << neighborsWithItems.size() << "): ";
+        cin >> locationChoice;
+        if (cin.fail()) {
+            cout << "Invalid input. Please enter a number.\n";
+                cin.clear(); 
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        break;
+    }
     if (locationChoice < 1 || locationChoice > static_cast<int>(neighborsWithItems.size())) {
         cout << "Invalid location choice.\n";
         return;
@@ -63,10 +71,19 @@ void Archeologist::specialAction() {
         }
         cout << exitChoice << ". Exit\n";
 
-        cout << "Enter the number of the item to pick up (" << exitChoice << " to finish): ";
         int itemChoice;
-        cin >> itemChoice;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        while (true) {
+            cout << "Enter the number of the item to pick up (" << exitChoice << " to finish): ";
+            cin >> itemChoice;
+            if (cin.fail()) {
+                cout << "Invalid input. Please enter a number.\n";
+                cin.clear(); 
+                cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+                continue;
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            break;
+        }
 
         if (itemChoice == exitChoice) break;
 
@@ -92,4 +109,8 @@ void Archeologist::specialAction() {
     if (itemWasPickedUp) {
         remainingActions--;
     }
+}
+
+void Archeologist::ability(size_t index) {
+    cout << "Archeologist has no ability." << endl;
 }

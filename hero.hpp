@@ -9,7 +9,7 @@
 #include "villagermanager.hpp"
 #include "item.hpp"
 #include "perkcard.hpp"
-#include "TaskBoard.hpp"
+#include "taskboard.hpp"
 
 class PerkDeck;
 class InvisibleMan;
@@ -25,9 +25,12 @@ public:
     virtual void move(std::shared_ptr<Location> newLocation, VillagerManager& villagerManager, PerkDeck* perkDeck = nullptr);
     virtual void guide(VillagerManager& villagerManager, Map& map, PerkDeck* perkDeck = nullptr);
     virtual void pickUp();
-    virtual void advance(Dracula& dracula, TaskBoard& taskBoard);
+    virtual void advance(Dracula& dracula, InvisibleMan& invisibleMan, TaskBoard& taskBoard);
     virtual void defeat(Dracula& dracula, TaskBoard& taskBoard);
     virtual void specialAction() = 0; 
+    virtual void ability(size_t index) = 0; 
+
+    virtual void setOtherHero(Hero* otherHero) {}
 
     const std::string& getHeroName() const;
     const std::string& getPlayerName() const;
@@ -38,10 +41,11 @@ public:
 
     std::vector<Item> getItems() const;
     void removeItem(size_t index);
+    void addItem(const Item& item);
 
     void addPerkCard(const PerkCard& card);
     const std::vector<PerkCard>& getPerkCards() const;
-    bool usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck = nullptr, InvisibleMan* invisibleMan = nullptr, ItemBag* itemBag = nullptr, Hero* otherHero = nullptr, Dracula* dracula = nullptr);
+    void usePerkCard(size_t index, Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck = nullptr, InvisibleMan* invisibleMan = nullptr, ItemBag* itemBag = nullptr, Hero* otherHero = nullptr, Dracula* dracula = nullptr);
     void removePerkCard(size_t index);
     bool shouldSkipNextMonsterPhase() const;
     void setSkipNextMonsterPhase(bool skip);

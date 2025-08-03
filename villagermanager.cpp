@@ -14,3 +14,14 @@ shared_ptr<Villager> VillagerManager::getVillager(const string& villagerName) co
     }
     throw invalid_argument(villagerName + " doesn't exists");
 }
+
+const unordered_map<string, shared_ptr<Villager>>& VillagerManager::getAllVillagers() const {
+    return villagerMap;
+}
+
+void VillagerManager::moveVillager(const string& villagerName, shared_ptr<Location> location) {
+    auto it = villagerMap.find(villagerName);
+    if (it != villagerMap.end()) {
+        it->second->setCurrentLocation(location);
+    }
+}

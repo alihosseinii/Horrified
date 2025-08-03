@@ -29,6 +29,7 @@ public:
     void removeItem(const Item& item);
     const std::vector<Item>& getItems() const;
     void clearItems();
+    void clearCharacters();
 };
 
 #endif

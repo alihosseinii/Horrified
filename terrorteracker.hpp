@@ -13,6 +13,8 @@ public:
 
     void increase();  
     int getLevel() const;
+    
+    void setLevel(int newLevel);
 };
 
-#endif
+#endif 

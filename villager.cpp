@@ -4,6 +4,8 @@
 #include "perkdeck.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -21,9 +23,6 @@ void Villager::setVillagerName(string villagerName) {
 }
 
 shared_ptr<Location> Villager::getCurrentLocation() const {
-    if (!currentLocation) {
-        throw runtime_error("Current location is not set");
-    }
     return currentLocation;
 }
 
@@ -31,34 +30,67 @@ void Villager::setCurrentLocation(shared_ptr<Location> currentLocation) {
     this->currentLocation = currentLocation;
 }
 
-void Villager::checkSafePlace() {
+void Villager::checkSafePlace(PerkDeck* perkDeck, Hero* hero1, Hero* hero2) {
+    int reachedSafePlace = 0;
     if (villagerName == "Dr.Cranley" && currentLocation->getName() == "Precinct") {
         currentLocation->removeCharacter(villagerName);
+        setCurrentLocation(nullptr);  
         cout << villagerName << " has reached their safe place and left the game!\n";
+        reachedSafePlace++;
     }
     else if (villagerName == "Dr.Reed" && currentLocation->getName() == "Camp") {
         currentLocation->removeCharacter(villagerName);
+        setCurrentLocation(nullptr);  
         cout << villagerName << " has reached their safe place and left the game!\n";
+        reachedSafePlace++;
     }
     else if (villagerName == "Prof.Pearson" && currentLocation->getName() == "Museum") {
         currentLocation->removeCharacter(villagerName);
+        setCurrentLocation(nullptr);  
         cout << villagerName << " has reached their safe place and left the game!\n";
+        reachedSafePlace++;
     }
     else if (villagerName == "Maleva" && currentLocation->getName() == "Shop") {
         currentLocation->removeCharacter(villagerName);
+        setCurrentLocation(nullptr);  
         cout << villagerName << " has reached their safe place and left the game!\n";
+        reachedSafePlace++;
     }
     else if (villagerName == "Fritz" && currentLocation->getName() == "Institute") {
         currentLocation->removeCharacter(villagerName);
+        setCurrentLocation(nullptr); 
         cout << villagerName << " has reached their safe place and left the game!\n";
+        reachedSafePlace++;
     }
     else if (villagerName == "Wilbur And Chick" && currentLocation->getName() == "Dungeon") {
         currentLocation->removeCharacter(villagerName);
+        setCurrentLocation(nullptr);
         cout << villagerName << " has reached their safe place and left the game!\n";
+        reachedSafePlace++;
     }
     else if (villagerName == "Maria" && currentLocation->getName() == "Camp") {
         currentLocation->removeCharacter(villagerName);
+        setCurrentLocation(nullptr);
         cout << villagerName << " has reached their safe place and left the game!\n";
+        reachedSafePlace++;
+    }
+
+    for (size_t i = 0; i < reachedSafePlace; ++i) {
+        if (perkDeck != nullptr && (hero1 != nullptr || hero2 != nullptr)) {
+            try {
+                PerkCard perk = perkDeck->drawRandomCard();
+                Hero* randomHero = (hero1 != nullptr && hero2 != nullptr) ? 
+                    (rand() % 2 == 0 ? hero1 : hero2) : 
+                    (hero1 != nullptr ? hero1 : hero2);
+                
+                randomHero->addPerkCard(perk);
+                cout << randomHero->getPlayerName() << " (" << randomHero->getHeroName() 
+                     << ") received perk card: " << PerkCard::perkTypeToString(perk.getType()) 
+                     << " for " << villagerName << " reaching their safe place!\n";
+            } catch (const exception& e) {
+                cout << e.what() << endl;
+            }
+        }
     }
 }
 
@@ -115,6 +147,7 @@ void Villager::move(shared_ptr<Location> newLocation, Hero* guidingHero, PerkDec
 
         if (reachedSafePlace) {
             newLocation->removeCharacter(villagerName);
+            setCurrentLocation(nullptr);
             cout << villagerName << " has reached their safe place and left the game!\n";
             
             if (guidingHero != nullptr && perkDeck != nullptr) {
@@ -134,7 +167,7 @@ void Villager::move(shared_ptr<Location> newLocation, Hero* guidingHero, PerkDec
     }
 }
 
-void Villager::moveByMonster(shared_ptr<Location> newLocation) {
+void Villager::moveByMonster(shared_ptr<Location> newLocation, PerkDeck* perkDeck, Hero* hero1, Hero* hero2) {
     if (currentLocation == newLocation) {
         throw invalid_argument(villagerName + " is already in " + currentLocation->getName());
     }
@@ -148,7 +181,7 @@ void Villager::moveByMonster(shared_ptr<Location> newLocation) {
         setCurrentLocation(newLocation);
         cout << villagerName << " moved to " << newLocation->getName() << ".\n";
 
-        checkSafePlace();
+        checkSafePlace(perkDeck, hero1, hero2);
     } catch (const exception& e) {
         throw runtime_error("Failed to move villager: " + string(e.what()));
     }

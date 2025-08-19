@@ -15,7 +15,7 @@ std::string powerName;
 public:
     InvisibleMan(std::shared_ptr<Location> startingLocation);
 
-    void power(Hero* hero, TerrorTracker& terrorTracker) override;
+    void power(Hero* hero, TerrorTracker& terrorTracker, VillagerManager& villagerManager) override;
     void moveTowardsVillager(int steps);
 };
 

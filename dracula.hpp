@@ -11,7 +11,6 @@ private:
 
 public:
     Dracula(std::shared_ptr<Location> startingLocation);
-
     void power(Hero* hero, TerrorTracker& terrorTracker, VillagerManager& villagerManager) override;
 };
 

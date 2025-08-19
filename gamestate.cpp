@@ -734,12 +734,10 @@ void GameState::setMonsterState(const Monster* monster, bool isDracula) {
     MonsterState& state = isDracula ? draculaState : invisibleManState;
     
     if (monster == nullptr) {
-        // Monster is dead/defeated
         state.monsterName = isDracula ? "Dracula" : "Invisible man";
         state.currentLocationName = "";
         state.isAlive = false;
     } else {
-        // Monster is alive
         state.monsterName = monster->getMonsterName();
         state.currentLocationName = monster->getCurrentLocation() ? monster->getCurrentLocation()->getName() : "";
         state.isAlive = monster->getCurrentLocation() != nullptr;
@@ -752,7 +750,11 @@ void GameState::setVillagerStates(const VillagerManager& villagerManager) {
     for (const auto& [name, villager] : villagers) {
         VillagerState state;
         state.villagerName = name;
-        state.currentLocationName = villager->getCurrentLocation()->getName();
+        if (villager && villager->getCurrentLocation()) {
+            state.currentLocationName = villager->getCurrentLocation()->getName();
+        } else {
+            state.currentLocationName = "";
+        }
         villagerStates.push_back(state);
     }
 }

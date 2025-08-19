@@ -577,7 +577,6 @@ bool GameState::loadFromFile(const string& filename) {
                 
                 locationState.items.push_back(item);
             }
-            
             mapLocationStates.push_back(locationState);
         }
         

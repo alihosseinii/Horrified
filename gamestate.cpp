@@ -532,7 +532,7 @@ bool GameState::loadFromFile(const string& filename) {
             itemStates.push_back(item);
         }
         
-        // map location states
+        // location states
         size_t mapLocationCount;
         file.read(reinterpret_cast<char*>(&mapLocationCount), sizeof(mapLocationCount));
         mapLocationStates.clear();

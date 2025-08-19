@@ -39,9 +39,8 @@ void MonsterManager::ResumeMonsterPhaseAfterDefense(Map& map, ItemBag& itemBag, 
 
         std::vector<std::string> dices;
         if (i == resumeStrikeIndex) {
-            dices = resumeDiceRemaining; // continue leftover dice
+            dices = resumeDiceRemaining; 
         } else {
-            // roll fresh for subsequent strikes
             Dice dice;
             for (size_t j = 0; j < strike.diceCount; ++j) {
                 DiceFace df = dice.roll();
@@ -54,7 +53,6 @@ void MonsterManager::ResumeMonsterPhaseAfterDefense(Map& map, ItemBag& itemBag, 
         while (!dices.empty()) {
             auto attack = std::find(dices.begin(), dices.end(), "*");
             if (attack != dices.end()) {
-                // Check if any hero present; if so, hand off again to UI
                 auto currentLocationCharacters = monster->getCurrentLocation()->getCharacters();
                 bool heroPresent = false;
                 for (const auto& ch : currentLocationCharacters) {
@@ -68,7 +66,7 @@ void MonsterManager::ResumeMonsterPhaseAfterDefense(Map& map, ItemBag& itemBag, 
                     dices.erase(attack);
                     resumeDiceRemaining = dices;
                     resumeInvisibleManPowerDiceAccumulated = invisibleManPowerDice;
-                    return; // return control to UI
+                    return; 
                 } else {
                     if (monster->attack(archeologist, mayor, courier, scientist, terrorTracker, map, villagerManager)) {
                         monsterPhaseEnding = true;
@@ -423,7 +421,6 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                             break;
                         }
                     } else {
-                        // Graphical (non-interactive) flow: defer hero defense to UI
                         auto currentLocationCharacters = monster->getCurrentLocation()->getCharacters();
                         bool heroPresent = false;
                         for (const auto& ch : currentLocationCharacters) {
@@ -432,18 +429,14 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                         if (heroPresent) {
                             pendingHeroAttack = true;
                             pendingAttackMonsterName = monster->getMonsterName();
-                            // Pause processing now; UI will handle hospital/terror and we won't continue this card
                             monsterPhaseEnding = true;
-                            // Remove the current attack symbol from the dice and break out
                             dices.erase(attack);
-                            // Save resume state
                             awaitingResume = true;
                             resumeStrikeIndex = i;
-                            resumeDiceRemaining = dices; // after removing current '*'
+                            resumeDiceRemaining = dices;
                             resumeInvisibleManPowerDiceAccumulated = invisibleManPowerDice;
                             break;
                         } else {
-                            // No hero; attempt villager attack immediately (no UI)
                             if (monster->attack(archeologist, mayor, courier, scientist, terrorTracker, map, villagerManager)) {
                                 monsterPhaseEnding = true;
                                 break;

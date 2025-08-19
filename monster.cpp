@@ -108,7 +108,7 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
     cout << monsterName << " moved to " << newLocation->getName() << ".\n";
 }
 
-bool Monster::attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map) {
+bool Monster::attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map, VillagerManager& villagerManager) {
     auto currentLocationCharacters = currentLocation->getCharacters();
     Hero* targetHero = nullptr;
     string targetVillager = "";
@@ -203,8 +203,15 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientis
             cout << e.what() << endl;
         }
     } else if (!targetVillager.empty()) {
-        cout << targetVillager << "!\n";
         currentLocation->removeCharacter(targetVillager);
+        
+        try {
+            auto villager = villagerManager.getVillager(targetVillager);
+            villager->setCurrentLocation(nullptr);
+        } catch (const exception& e) {
+            cout << "Error setting villager location to nullptr: " << e.what() << endl;
+        }
+        
         cout << targetVillager << " was killed by " << monsterName << "!\n";
         terrorTracker.increase();
         cout << "Terror level increased to " << terrorTracker.getLevel() << " due to the attack!\n";

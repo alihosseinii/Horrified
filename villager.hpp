@@ -19,8 +19,8 @@ public:
     void setCurrentLocation(std::shared_ptr<Location> currentLocation);
 
     void move(std::shared_ptr<Location> newLocation, Hero* guidingHero = nullptr, PerkDeck* perkDeck = nullptr);
-    void moveByMonster(std::shared_ptr<Location> newLocation);
-    void checkSafePlace();
+    void moveByMonster(std::shared_ptr<Location> newLocation, PerkDeck* perkDeck = nullptr, Hero* hero1 = nullptr, Hero* hero2 = nullptr);
+    void checkSafePlace(PerkDeck* perkDeck = nullptr, Hero* hero1 = nullptr, Hero* hero2 = nullptr);
 private:
     std::string villagerName;
     std::shared_ptr<Location> currentLocation;

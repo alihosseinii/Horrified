@@ -532,7 +532,7 @@ bool GameState::loadFromFile(const string& filename) {
             itemStates.push_back(item);
         }
         
-        // map location states
+        // location states
         size_t mapLocationCount;
         file.read(reinterpret_cast<char*>(&mapLocationCount), sizeof(mapLocationCount));
         mapLocationStates.clear();
@@ -577,7 +577,6 @@ bool GameState::loadFromFile(const string& filename) {
                 
                 locationState.items.push_back(item);
             }
-            
             mapLocationStates.push_back(locationState);
         }
         
@@ -734,12 +733,10 @@ void GameState::setMonsterState(const Monster* monster, bool isDracula) {
     MonsterState& state = isDracula ? draculaState : invisibleManState;
     
     if (monster == nullptr) {
-        // Monster is dead/defeated
         state.monsterName = isDracula ? "Dracula" : "Invisible man";
         state.currentLocationName = "";
         state.isAlive = false;
     } else {
-        // Monster is alive
         state.monsterName = monster->getMonsterName();
         state.currentLocationName = monster->getCurrentLocation() ? monster->getCurrentLocation()->getName() : "";
         state.isAlive = monster->getCurrentLocation() != nullptr;
@@ -752,7 +749,11 @@ void GameState::setVillagerStates(const VillagerManager& villagerManager) {
     for (const auto& [name, villager] : villagers) {
         VillagerState state;
         state.villagerName = name;
-        state.currentLocationName = villager->getCurrentLocation()->getName();
+        if (villager && villager->getCurrentLocation()) {
+            state.currentLocationName = villager->getCurrentLocation()->getName();
+        } else {
+            state.currentLocationName = "";
+        }
         villagerStates.push_back(state);
     }
 }

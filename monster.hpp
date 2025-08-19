@@ -16,14 +16,15 @@
 
 class TerrorTracker;
 class Map;
+class VillagerManager;
 
 class Monster {
 public:
     Monster(const std::string& monsterName, std::shared_ptr<Location> startingLocation);
     virtual ~Monster() = default;
 
-    virtual void power(Hero* hero, TerrorTracker& terrorTracker) = 0;
-    bool attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map);
+    virtual void power(Hero* hero, TerrorTracker& terrorTracker, VillagerManager& villagerManager) = 0;
+    bool attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map, VillagerManager& villagerManager);
 
     std::string getMonsterName() const;
     std::shared_ptr<Location> getCurrentLocation() const;

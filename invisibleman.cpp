@@ -13,12 +13,14 @@ InvisibleMan::InvisibleMan(shared_ptr<Location> startingLocation) : Monster("Inv
     powerName = "Stalk Unseen";
 }
 
-void InvisibleMan::power(Hero* hero, TerrorTracker& terrorTracker) {
+void InvisibleMan::power(Hero* hero, TerrorTracker& terrorTracker, VillagerManager& villagerManager) {
     auto currentLocationCharacterExistence = currentLocation->getCharacters();
     if (!currentLocationCharacterExistence.empty()) {
         for (const auto& c : currentLocationCharacterExistence) {
             if (c == "Archeologist" || c == "Mayor" || c == "Scientist" || c == "Courier" || c == "Dracula" || c == "Invisible man") continue;
             currentLocation->removeCharacter(c);
+            auto villager = villagerManager.getVillager(c);
+            villager->setCurrentLocation(nullptr);
             cout << c << " was killed by Invisible man.\n";
             terrorTracker.increase();
             cout << "Terror level increased to " << terrorTracker.getLevel() << " due to villager death.\n";

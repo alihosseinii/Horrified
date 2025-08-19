@@ -8,9 +8,8 @@ Dracula::Dracula(shared_ptr<Location> startingLocation) : Monster("Dracula", sta
     powerName = "Dark Charm";
 }
 
-void Dracula::power(Hero* hero, TerrorTracker& terrorTracker) {
+void Dracula::power(Hero* hero, TerrorTracker& terrorTracker, VillagerManager& villagerManager) {
     if (currentLocation == hero->getCurrentLocation()) return;
-
     try {
         auto heroLocation = hero->getCurrentLocation();
         heroLocation->removeCharacter(hero->getHeroName());

@@ -10,8 +10,111 @@ using namespace std;
 
 MonsterManager::MonsterManager() {
     rng.seed(chrono::steady_clock::now().time_since_epoch().count());
+    hasCurrentCard = false;
     initializeDefaultCards();
     shuffle();
+}
+void MonsterManager::ResumeMonsterPhaseAfterDefense(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, Courier* courier, Scientist* scientist, VillagerManager& villagerManager, std::vector<std::string>& diceResults, PerkDeck* perkDeck, Hero* hero1, Hero* hero2) {
+    (void)itemBag; (void)frenzyMarker; (void)currentHero; (void)perkDeck; (void)hero1; (void)hero2;
+    if (!awaitingResume) return;
+
+    bool monsterPhaseEnding = false;
+    int invisibleManPowerDice = resumeInvisibleManPowerDiceAccumulated;
+
+    auto resolveMonsterPtr = [&](MonsterType t) -> Monster* {
+        switch (t) {
+            case MonsterType::Dracula: return dracula;
+            case MonsterType::InvisibleMan: return invisibleMan;
+            case MonsterType::FrenziedMonster: return frenzyMarker.getCurrentFrenzied();
+        }
+        return nullptr;
+    };
+
+    const auto& strikes = currentCard.getStrikeList();
+    for (size_t i = resumeStrikeIndex; i < strikes.size(); ++i) {
+        if (monsterPhaseEnding) break;
+        const Strike& strike = strikes.at(i);
+        Monster* monster = resolveMonsterPtr(strike.monster);
+        if (monster == nullptr) continue;
+
+        std::vector<std::string> dices;
+        if (i == resumeStrikeIndex) {
+            dices = resumeDiceRemaining; 
+        } else {
+            Dice dice;
+            for (size_t j = 0; j < strike.diceCount; ++j) {
+                DiceFace df = dice.roll();
+                std::string face = dice.faceToString(df);
+                diceResults.push_back(face);
+                dices.push_back(face);
+            }
+        }
+
+        while (!dices.empty()) {
+            auto attack = std::find(dices.begin(), dices.end(), "*");
+            if (attack != dices.end()) {
+                auto currentLocationCharacters = monster->getCurrentLocation()->getCharacters();
+                bool heroPresent = false;
+                for (const auto& ch : currentLocationCharacters) {
+                    if (ch == "Archeologist" || ch == "Mayor" || ch == "Courier" || ch == "Scientist") { heroPresent = true; break; }
+                }
+                if (heroPresent) {
+                    pendingHeroAttack = true;
+                    pendingAttackMonsterName = monster->getMonsterName();
+                    awaitingResume = true;
+                    resumeStrikeIndex = i;
+                    dices.erase(attack);
+                    resumeDiceRemaining = dices;
+                    resumeInvisibleManPowerDiceAccumulated = invisibleManPowerDice;
+                    return; 
+                } else {
+                    if (monster->attack(archeologist, mayor, courier, scientist, terrorTracker, map, villagerManager)) {
+                        monsterPhaseEnding = true;
+                        break;
+                    }
+                }
+                dices.erase(attack);
+                continue;
+            }
+
+            auto power = std::find(dices.begin(), dices.end(), "!");
+            if (power != dices.end()) {
+                int terrorBefore = terrorTracker.getLevel();
+                monster->power(currentHero, terrorTracker, villagerManager);
+                int terrorAfter = terrorTracker.getLevel();
+                if (strike.monster == MonsterType::InvisibleMan) {
+                    if (terrorAfter == terrorBefore) {
+                        invisibleManPowerDice++;
+                    } else if (terrorAfter > terrorBefore) {
+                        monsterPhaseEnding = true;
+                        break;
+                    }
+                } else {
+                    if (terrorAfter > terrorBefore) {
+                        monsterPhaseEnding = true;
+                        break;
+                    }
+                }
+                dices.erase(power);
+                continue;
+            }
+
+            auto empty = std::find(dices.begin(), dices.end(), " ");
+            if (empty != dices.end()) {
+                dices.erase(empty);
+            } else {
+                break;
+            }
+        }
+    }
+
+    if (invisibleMan != nullptr && invisibleManPowerDice > 0) {
+        int totalSteps = invisibleManPowerDice * 2;
+        invisibleMan->moveTowardsVillager(totalSteps);
+    }
+
+    awaitingResume = false;
+    resumeDiceRemaining.clear();
 }
 
 void MonsterManager::initializeDefaultCards() {
@@ -105,6 +208,10 @@ MonsterCard MonsterManager::drawCard() {
     shuffle();
     MonsterCard card = cards.back();
     cards.pop_back();
+    
+    currentCard = card;
+    hasCurrentCard = true;
+    
     return card;
 }
 
@@ -112,7 +219,7 @@ bool MonsterManager::isEmpty() const {
     return cards.empty();
 }
 
-void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, Courier* courier, Scientist* scientist, VillagerManager& villagerManager, std::vector<std::string>& diceResults) {
+void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, Courier* courier, Scientist* scientist, VillagerManager& villagerManager, std::vector<std::string>& diceResults, PerkDeck* perkDeck, Hero* hero1, Hero* hero2, bool interactive) {
     diceResults.clear();
     auto monsterCard = drawCard();
 
@@ -121,6 +228,8 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
     }
 
     cout << monsterCard.getName() << endl;
+
+    cout << "Frenzy marker: " << frenzyMarker.getCurrentFrenzied()->getMonsterName() << "!\n";
 
     if (monsterCard.getName() == "Form Of The Bat") {
         if (dracula != nullptr) {
@@ -163,36 +272,43 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
     else if (monsterCard.getName() == "The Delivery") {
         auto docksLocation = map.getLocation("Docks");
         docksLocation->addCharacter("Wilbur And Chick");
+        villagerManager.addVillager("Wilbur And Chick", docksLocation);
         cout << "Wilbur And Chick was placed in Docks!\n";
     }
     else if (monsterCard.getName() == "Fortune Teller") {
         auto campLocation = map.getLocation("Camp");
         campLocation->addCharacter("Maleva");
+        villagerManager.addVillager("Maleva", campLocation);
         cout << "Maleva was placed in Camp!\n";
     }
     else if (monsterCard.getName() == "Former Employer") {
         auto laboratoryLocation = map.getLocation("Laboratory");
         laboratoryLocation->addCharacter("Dr.Cranley");
+        villagerManager.addVillager("Dr.Cranley", laboratoryLocation);
         cout << "Dr.Cranley was placed in Laboratory!\n";
     }
     else if (monsterCard.getName() == "Hurried Assistant") {
         auto towerLocation = map.getLocation("Tower");
         towerLocation->addCharacter("Fritz");
+        villagerManager.addVillager("Fritz", towerLocation);
         cout << "Fritz was placed in Tower!\n";
     }
     else if (monsterCard.getName() == "The Innocent") {
         auto barnLocation = map.getLocation("Barn");
         barnLocation->addCharacter("Maria");
+        villagerManager.addVillager("Maria", barnLocation);
         cout << "Maria was placed in Barn!\n";
     }
     else if (monsterCard.getName() == "Egyptian Expert") {
         auto caveLocation = map.getLocation("Cave");
         caveLocation->addCharacter("Prof.Pearson");
+        villagerManager.addVillager("Prof.Pearson", caveLocation);
         cout << "Prof.Pearson was placed in Cave!\n";
     }
     else if (monsterCard.getName() == "The Ichthyologist") {
         auto instituteLocation = map.getLocation("Institute");
         instituteLocation->addCharacter("Dr.Reed");
+        villagerManager.addVillager("Dr.Reed", instituteLocation);
         cout << "Dr.Reed was placed in Institute!\n";
     }
     else if (monsterCard.getName() == "Hypnotic Gaze") {
@@ -242,7 +358,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                             cout << scientist->getPlayerName() << " (Scientist) moved to " << closerLocation->getName() << ".\n";
                         } else {
                             auto villager = villagerManager.getVillager(closestCharacter);
-                            villager->moveByMonster(closerLocation);
+                            villager->moveByMonster(closerLocation, perkDeck, hero1, hero2);
                         }
                     } catch (const exception& e) {
                         cout << e.what() << endl;
@@ -257,12 +373,12 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
         frenzyMarker.advance(dracula, invisibleMan);
         cout << "Frenzy marker was given to " << frenzyMarker.getCurrentFrenzied()->getMonsterName() << "!\n";
         
-        moveVillagersCloserToSafePlaces(map, villagerManager);
+        moveVillagersCloserToSafePlaces(map, villagerManager, perkDeck, hero1, hero2);
     }
 
     bool monsterPhaseEnding = false;
     int invisibleManPowerDice = 0;
-    
+
     Strike strike;
     for (size_t i = 0; i < monsterCard.getStrikeList().size(); ++i) {
         if (monsterPhaseEnding) break;
@@ -299,13 +415,39 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
             auto attack = std::find(dices.begin(), dices.end(), "*");
             if (attack != dices.end()) {
                 if (monster != nullptr) {
-                    if (monster->attack(archeologist, mayor, courier, scientist, terrorTracker, map)) {
-                        monsterPhaseEnding = true;
-                        break;
+                    if (interactive) {
+                        if (monster->attack(archeologist, mayor, courier, scientist, terrorTracker, map, villagerManager)) {
+                            monsterPhaseEnding = true;
+                            break;
+                        }
+                    } else {
+                        auto currentLocationCharacters = monster->getCurrentLocation()->getCharacters();
+                        bool heroPresent = false;
+                        for (const auto& ch : currentLocationCharacters) {
+                            if (ch == "Archeologist" || ch == "Mayor" || ch == "Courier" || ch == "Scientist") { heroPresent = true; break; }
+                        }
+                        if (heroPresent) {
+                            pendingHeroAttack = true;
+                            pendingAttackMonsterName = monster->getMonsterName();
+                            monsterPhaseEnding = true;
+                            dices.erase(attack);
+                            awaitingResume = true;
+                            resumeStrikeIndex = i;
+                            resumeDiceRemaining = dices;
+                            resumeInvisibleManPowerDiceAccumulated = invisibleManPowerDice;
+                            break;
+                        } else {
+                            if (monster->attack(archeologist, mayor, courier, scientist, terrorTracker, map, villagerManager)) {
+                                monsterPhaseEnding = true;
+                                break;
+                            }
+                        }
                     }
                 }
-                dices.erase(attack);
-                continue;
+                if (!monsterPhaseEnding) {
+                    dices.erase(attack);
+                    continue;
+                }
             }
 
             auto power = std::find(dices.begin(), dices.end(), "!");
@@ -313,7 +455,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                 if (monster != nullptr) {
                     if (strike.monster == MonsterType::InvisibleMan) {
                         int terrorBefore = terrorTracker.getLevel();
-                        monster->power(currentHero, terrorTracker);
+                        monster->power(currentHero, terrorTracker, villagerManager);
                         int terrorAfter = terrorTracker.getLevel();
                         
                         if (terrorAfter == terrorBefore) {
@@ -326,7 +468,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
                         }
                     } else {
                         int terrorBefore = terrorTracker.getLevel();
-                        monster->power(currentHero, terrorTracker);
+                        monster->power(currentHero, terrorTracker, villagerManager);
                         int terrorAfter = terrorTracker.getLevel();
                         
                         if (terrorAfter > terrorBefore) {
@@ -356,7 +498,7 @@ void MonsterManager::MonsterPhase(Map& map, ItemBag& itemBag, Dracula* dracula, 
     } 
 } 
 
-void MonsterManager::moveVillagersCloserToSafePlaces(Map& map, VillagerManager& villagerManager) {
+void MonsterManager::moveVillagersCloserToSafePlaces(Map& map, VillagerManager& villagerManager, PerkDeck* perkDeck, Hero* hero1, Hero* hero2) {
     unordered_map<string, string> safePlaces = {
         {"Dr.Cranley", "Precinct"},
         {"Dr.Reed", "Camp"},
@@ -392,7 +534,7 @@ void MonsterManager::moveVillagersCloserToSafePlaces(Map& map, VillagerManager& 
 
                 auto closerLocation = map.findCloserLocation(currentLocation, safeLocation);
                 if (closerLocation != nullptr && closerLocation != currentLocation) {
-                    villager->moveByMonster(closerLocation);
+                    villager->moveByMonster(closerLocation, perkDeck, hero1, hero2);
                     movedVillagers.insert(character);
                 }
             } catch (const exception& e) {
@@ -409,4 +551,15 @@ const vector<MonsterCard>& MonsterManager::getCards() const {
 
 void MonsterManager::setCards(const vector<MonsterCard>& newCards) {
     cards = newCards;
+}
+
+std::string MonsterManager::getCurrentCardName() const {
+    if (hasCurrentCard) {
+        return currentCard.getName();
+    }
+    return "No card drawn";
+}
+
+MonsterCard MonsterManager::getCurrentCard() const {
+    return currentCard;
 }

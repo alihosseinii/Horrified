@@ -27,7 +27,6 @@ private:
     std::mt19937 rng;
     MonsterCard currentCard;  
     bool hasCurrentCard;     
-    // Pending hero attack info for graphical (non-interactive) flow
     bool pendingHeroAttack = false;
     std::string pendingAttackMonsterName;
     bool awaitingResume = false;
@@ -51,12 +50,10 @@ public:
     std::string getCurrentCardName() const;
     MonsterCard getCurrentCard() const;
 
-    // Accessors for pending hero attack (graphical flow)
     bool hasPendingHeroAttack() const { return pendingHeroAttack; }
     std::string getPendingAttackMonsterName() const { return pendingAttackMonsterName; }
     void clearPendingHeroAttack() { pendingHeroAttack = false; pendingAttackMonsterName.clear(); }
 
-    // Resume processing after UI defense resolution
     void ResumeMonsterPhaseAfterDefense(Map& map, ItemBag& itemBag, Dracula* dracula, InvisibleMan* invisibleMan, FrenzyMarker& frenzyMarker, Hero* currentHero, TerrorTracker& terrorTracker, Archeologist* archeologist, Mayor* mayor, Courier* courier, Scientist* scientist, VillagerManager& villagerManager, std::vector<std::string>& diceResults, PerkDeck* perkDeck = nullptr, Hero* hero1 = nullptr, Hero* hero2 = nullptr);
 };
 

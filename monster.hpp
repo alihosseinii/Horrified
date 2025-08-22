@@ -18,13 +18,22 @@ class TerrorTracker;
 class Map;
 class VillagerManager;
 
+#ifndef TERMINAL
+class GameScreen;
+#endif
+
 class Monster {
 public:
     Monster(const std::string& monsterName, std::shared_ptr<Location> startingLocation);
     virtual ~Monster() = default;
 
     virtual void power(Hero* hero, TerrorTracker& terrorTracker, VillagerManager& villagerManager) = 0;
-    bool attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map, VillagerManager& villagerManager);
+    bool attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist,
+                TerrorTracker& terrorTracker, Map& map, VillagerManager& villagerManager
+        #ifndef TERMINAL
+                , GameScreen* gameScreen
+        #endif
+    );
 
     std::string getMonsterName() const;
     std::shared_ptr<Location> getCurrentLocation() const;

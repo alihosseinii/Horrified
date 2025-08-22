@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stdexcept>
+#ifndef TERMINAL
+#include "game_screen.hpp"
+#endif
 
 using namespace std;
 
@@ -108,7 +111,11 @@ void Monster::moveToNearestCharacter(const string& targetCharacter, int stepNumb
     cout << monsterName << " moved to " << newLocation->getName() << ".\n";
 }
 
-bool Monster::attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map, VillagerManager& villagerManager) {
+bool Monster::attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientist* scientist, TerrorTracker& terrorTracker, Map& map, VillagerManager& villagerManager
+        #ifndef TERMINAL
+                , GameScreen* gameScreen
+        #endif
+) {
     auto currentLocationCharacters = currentLocation->getCharacters();
     Hero* targetHero = nullptr;
     string targetVillager = "";
@@ -144,79 +151,96 @@ bool Monster::attack(Hero* archeologist, Hero* mayor, Courier* courier, Scientis
         return false;
     }
     
-    cout << monsterName << " attacks ";
+    cout << monsterName << " attacks "; 
     
     if (targetHero) {
         cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ")!\n";
-        auto items = targetHero->getItems();
-        if (!items.empty()) {
-            string answer;
-            while (true) {
-                cout << "Do you want to use an item to defend yourself? (Yes/No): ";
-                getline(cin, answer);
-                answer = toSentenceCase(answer);
-                if (answer == "Yes" || answer == "No") break;
-                cout << "Invalid input. Please enter Yes or No.\n";
+        #ifndef TERMINAL
+            if (gameScreen) {
+                gameScreen->addGameMessage(monsterName + " is attacking " + targetHero->getHeroName() + "!");
             }
-            if (answer == "Yes") {
-                cout << "Available items:\n";
-                for (size_t i = 0; i < items.size(); ++i) {
-                    cout << i + 1 << ". " << items[i].getItemName() << " (" 
-                         << Item::colorToString(items[i].getColor()) << ", Power: " 
-                         << items[i].getPower() << ")\n";
-                }
-                int choice;
-                while (true) {
-                    cout << "Enter item number to use (0 to cancel): ";
-                    cin >> choice;
-                    if (cin.fail()) {
-                        cout << "Invalid input. Please enter a number.\n";
-                        cin.clear(); 
-                        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
-                        continue;
-                    }
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    break;
-                }
-                if (choice > 0 && choice <= static_cast<int>(items.size())) {
-                    if (targetHero->getHeroName() == "Scientist") {
-                        targetHero->ability(choice - 1);
-                    }
-                    cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ") used " << items[choice-1].getItemName() << " to defend!\n";
-                    targetHero->removeItem(choice - 1);
+        #endif
+
+        auto items = targetHero->getItems();
+
+        if (!items.empty()) {
+            #ifdef TERMINAL
+                string answer;
+            #else
+                if (gameScreen) {
+                    gameScreen->showHeroDefenseYesNoChoice(
+                        targetHero,
+                        [targetHero, gameScreen](int itemIndex) {
+                            if (targetHero->getHeroName() == "Scientist") {
+                                targetHero->ability(itemIndex);
+                            }
+                            std::string itemName = targetHero->getItems()[itemIndex].getItemName();
+                            targetHero->removeItem(itemIndex);
+                            if (gameScreen) {
+                                gameScreen->addGameMessage(targetHero->getHeroName() + " used a " + itemName + " to fend off the attack!");
+                            }
+                        },
+                        [targetHero, &map, &terrorTracker, gameScreen]() {
+                            try {
+                                auto hospital = map.getLocation("Hospital");
+                                targetHero->getCurrentLocation()->removeCharacter(targetHero->getHeroName());
+                                hospital->addCharacter(targetHero->getHeroName());
+                                targetHero->setCurrentLocation(hospital);
+                                if (gameScreen) {
+                                    gameScreen->addGameMessage(targetHero->getHeroName() + " did not use an item and was sent to the Hospital!");
+                                }
+                                terrorTracker.increase();
+                            } catch (const std::exception& e) {
+                                std::cout << e.what() << std::endl;
+                            }
+                        }
+                    );
                     return false;
                 }
-            }
+            #endif
         } else {
             cout << "You have no items to use!\n";
+            try {
+                auto hospital = map.getLocation("Hospital");
+                currentLocation->removeCharacter(targetHero->getHeroName());
+                hospital->addCharacter(targetHero->getHeroName());
+                targetHero->setCurrentLocation(hospital);
+                
+                #ifndef TERMINAL
+                    if (gameScreen) {
+                        gameScreen->addGameMessage(targetHero->getHeroName() + " had no items to defend with and was sent to the Hospital!");
+                    }
+                #endif
+                
+                terrorTracker.increase();
+                return true;
+            } catch (const exception& e) {
+                cout << e.what() << endl;
+            }
         }
-        try {
-            auto hospital = map.getLocation("Hospital");
-            currentLocation->removeCharacter(targetHero->getHeroName());
-            hospital->addCharacter(targetHero->getHeroName());
-            targetHero->setCurrentLocation(hospital);
-            cout << targetHero->getPlayerName() << " (" << targetHero->getHeroName() << ") was wounded and moved to Hospital.\n";
-            terrorTracker.increase();
-            cout << "Terror level increased to " << terrorTracker.getLevel() << " due to the attack!\n";
-            return true;
-        } catch (const exception& e) {
-            cout << e.what() << endl;
-        }
-    } else if (!targetVillager.empty()) {
+    } 
+    else if (!targetVillager.empty()) {
         currentLocation->removeCharacter(targetVillager);
         
         try {
             auto villager = villagerManager.getVillager(targetVillager);
             villager->setCurrentLocation(nullptr);
         } catch (const exception& e) {
-            cout << "Error setting villager location to nullptr: " << e.what() << endl;
+            cout << "Error removing villager from manager: " << e.what() << endl;
         }
+        
+        #ifndef TERMINAL
+            if (gameScreen) {
+                gameScreen->addGameMessage(targetVillager + " was killed by " + monsterName + "!");
+            }
+        #endif
         
         cout << targetVillager << " was killed by " << monsterName << "!\n";
         terrorTracker.increase();
-        cout << "Terror level increased to " << terrorTracker.getLevel() << " due to the attack!\n";
+        
         return true;
     }
+    
     return false;
 }
 

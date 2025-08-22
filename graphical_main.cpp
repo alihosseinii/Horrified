@@ -6,6 +6,8 @@
 #include <algorithm>
 #include "game.hpp"
 #include "game_screen.hpp"
+#include "savemanager.hpp"
+#include "gamestate.hpp"
 
 struct MenuPlayerInfo {
     std::string name;
@@ -77,33 +79,33 @@ public:
         InitWindow(screenWidth, screenHeight, "Horrified");
         SetTargetFPS(60);
         
-        buttonWidth = screenWidth * 0.2;  
-        buttonHeight = screenHeight * 0.06; 
+        buttonWidth = screenWidth * 0.2; 
+        buttonHeight = screenHeight * 0.06;  
         buttonSpacing = screenHeight * 0.08;  
         
-        std::string titleFontPath = getAssetPath("../fonts/Creepster-Regular.ttf");
-        std::string menuFontPath = getAssetPath("../fonts/Rubik-Regular.ttf");
+        std::string titleFontPath = getAssetPath("fonts/Creepster-Regular.ttf");
+        std::string menuFontPath = getAssetPath("fonts/Rubik-Regular.ttf");
         
-        int titleFontSize = screenHeight * 0.08; 
+        int titleFontSize = screenHeight * 0.08;  
         int menuFontSize = screenHeight * 0.025;  
         
         titleFont = LoadFontEx(titleFontPath.c_str(), titleFontSize, 0, 0);
         menuFont = LoadFontEx(menuFontPath.c_str(), menuFontSize, 0, 0);
         
         if (titleFont.texture.id == 0) {
-            std::cout << "Failed to load title font: font/Creepster-Regular.ttf" << std::endl;
+            std::cout << "Failed to load title font: " << titleFontPath << std::endl;
             titleFont = GetFontDefault();
         } else {
-            std::cout << "Title font loaded successfully" << std::endl;
+            std::cout << "Title font loaded successfully from: " << titleFontPath << std::endl;
         }
         if (menuFont.texture.id == 0) {
-            std::cout << "Failed to load menu font: font/Rubik-Regular.ttf" << std::endl;
+            std::cout << "Failed to load menu font: " << menuFontPath << std::endl;
             menuFont = GetFontDefault();
         } else {
-            std::cout << "Menu font loaded successfully" << std::endl;
+            std::cout << "Menu font loaded successfully from: " << menuFontPath << std::endl;
         }
         
-        std::string backgroundPath = getAssetPath("../images/background.jpg");
+        std::string backgroundPath = getAssetPath("images/background.jpg");
         if (FileExists(backgroundPath.c_str())) {
             backgroundTexture = LoadTexture(backgroundPath.c_str());
             backgroundLoaded = true;
@@ -115,7 +117,7 @@ public:
         updateSaveSlots();
         
         players.clear();
-        players.resize(2);
+        players.resize(2); 
         strcpy(playerNameInput, "");
         strcpy(garlicTimeInput, "");
     }
@@ -159,10 +161,10 @@ public:
     
     std::string getAssetPath(const std::string& relativePath) {
         std::vector<std::string> possiblePaths = {
-            relativePath,                   
+            relativePath,                  
             "../" + relativePath,           
-            "../../" + relativePath,       
-            "./" + relativePath             
+            "../../" + relativePath,     
+            "./" + relativePath           
         };
         
         for (const auto& path : possiblePaths) {
@@ -266,7 +268,7 @@ public:
     
     void drawMainMenu() {
         const char* buttons[] = {"START GAME", "LOAD GAME", "EXIT"};
-        int startY = screenHeight * 0.6;  
+        int startY = screenHeight * 0.6; 
         
         for (int i = 0; i < 3; i++) {
             int buttonX = (screenWidth - buttonWidth) / 2;
@@ -297,7 +299,7 @@ public:
                         currentState = LOAD_GAME;
                         updateSaveSlots();
                         break;
-                    case 2: 
+                    case 2:
                         currentState = EXIT;
                         break;
                 }
@@ -328,11 +330,11 @@ public:
         
         DrawTextEx(menuFont, "Player Name:", {(float)inputX, (float)labelY}, labelFontSize, 1, textColor);
         
-        Rectangle nameBox = {(float)inputX, (float)inputY, (float)inputWidth, (float)(screenHeight * 0.04)};
+        Rectangle nameBox = {(float)inputX, (float)inputY + 5, (float)inputWidth, (float)(screenHeight * 0.04)};
         bool nameHovered = CheckCollisionPointRec(GetMousePosition(), nameBox);
         Color nameBoxColor = nameInputActive ? inputBoxActiveColor : (nameHovered ? buttonHoverColor : inputBoxColor);
         if (showNameError) {
-            nameBoxColor = {150, 50, 50, 255};
+            nameBoxColor = {150, 50, 50, 255}; 
         }
         DrawRectangleRec(nameBox, nameBoxColor);
         DrawRectangleLinesEx(nameBox, 2, WHITE);
@@ -348,7 +350,7 @@ public:
         
         DrawTextEx(menuFont, "Last Time You Ate Garlic (in hours):", {(float)inputX, (float)garlicLabelY}, labelFontSize, 1, textColor);
         
-        Rectangle garlicBox = {(float)inputX, (float)garlicInputY, (float)inputWidth, (float)(screenHeight * 0.04)};
+        Rectangle garlicBox = {(float)inputX, (float)garlicInputY + 5, (float)inputWidth, (float)(screenHeight * 0.04)};
         bool garlicHovered = CheckCollisionPointRec(GetMousePosition(), garlicBox);
         Color garlicBoxColor = garlicInputActive ? inputBoxActiveColor : (garlicHovered ? buttonHoverColor : inputBoxColor);
         if (showGarlicError) {
@@ -506,14 +508,33 @@ public:
             
             const char* slotText = saveSlotNames[i].c_str();
             int textWidth = MeasureTextEx(menuFont, slotText, menuFont.baseSize, 1).x;
-            int textX = buttonX + (buttonWidth - textWidth) / 2 - 50;  
+            int textX = buttonX + (buttonWidth - textWidth) / 2 - 50; 
             int textY = buttonY + (buttonHeight - menuFont.baseSize * 2) / 2;
             
             Color textColorCurrent = saveSlotExists[i] ? textColor : GRAY;
             DrawTextEx(menuFont, slotText, {(float)textX, (float)textY}, menuFont.baseSize * 2, 1, textColorCurrent);
             
             if (isHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && saveSlotExists[i]) {
-                std::cout << "Loading game from slot " << (i + 1) << std::endl;
+                int slot = i + 1;
+                std::cout << "Loading game from slot " << slot << std::endl;
+                GameState loaded;
+                SaveManager sm;
+                if (sm.loadGame(loaded, slot)) {
+                    std::string p1Name, p2Name, startPlayer, otherPlayer, startHero, otherHero;
+                    int p1Garlic, p2Garlic;
+                    loaded.restorePlayerInfo(p1Name, p2Name, startPlayer, otherPlayer, startHero, otherHero, p1Garlic, p2Garlic);
+
+                    std::vector<PlayerInfo> gamePlayers;
+                    gamePlayers.push_back(PlayerInfo(p1Name, startPlayer == p1Name ? startHero : otherHero, std::to_string(p1Garlic)));
+                    gamePlayers.push_back(PlayerInfo(p2Name, startPlayer == p2Name ? startHero : otherHero, std::to_string(p2Garlic)));
+
+                    gameScreen = std::make_unique<GameScreen>(gamePlayers, startPlayer, screenWidth, screenHeight);
+                    gameScreen->run();
+                    gameScreen->restoreFromGameState(loaded);
+                    currentState = GAME_SCREEN;
+                } else {
+                    std::cout << "Failed to load game from slot " << slot << std::endl;
+                }
                 return; 
             }
         }
@@ -555,7 +576,7 @@ public:
             heroOptions.erase(std::remove(heroOptions.begin(), heroOptions.end(), firstPlayerHero), heroOptions.end());
         }
         
-        int buttonSpacing = screenWidth * 0.02; 
+        int buttonSpacing = screenWidth * 0.02;  
         int totalWidth = 2 * buttonWidth + buttonSpacing;
         int startX = (screenWidth - totalWidth) / 2;
         int startY = screenHeight * 0.35;
@@ -706,4 +727,4 @@ int main() {
     menu.run();
 
     return 0;
-} 
+}

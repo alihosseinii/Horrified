@@ -361,6 +361,10 @@ void Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
     
     switch (type) {
         case PerkType::VisitFromTheDetective: {
+#ifndef TERMINAL
+            // In graphical mode, this will be handled by the UI
+            break;
+#else
             cout << "Choose a location to place the Invisible Man: ";
             string locationName;
             getline(cin, locationName);
@@ -384,6 +388,7 @@ void Hero::usePerkCard(size_t index, Map& map, VillagerManager& villagerManager,
                 return;
             }
             break;
+#endif
         }
         
         case PerkType::BreakOfDawn: {
@@ -482,6 +487,10 @@ void Hero::advance(Dracula& dracula, InvisibleMan& invisibleMan, TaskBoard& task
     }
 
     if (currentLocation->getName() == "Precinct") {
+#ifndef TERMINAL
+        // In graphical mode, this will be handled by the UI
+        return;
+#else
         if (invisibleMan.getCurrentLocation() == nullptr) {
             cout << "Invisible man is defeated.\n";
             return;
@@ -530,6 +539,7 @@ void Hero::advance(Dracula& dracula, InvisibleMan& invisibleMan, TaskBoard& task
             cout << "Invalid choice.\n";
             return;
         }
+#endif
     }
 
     if (!taskBoard.isCoffinLocation(currentLocation->getName())) {
@@ -544,6 +554,10 @@ void Hero::advance(Dracula& dracula, InvisibleMan& invisibleMan, TaskBoard& task
     if (taskBoard.isCoffinDestroyed(currentLocation->getName())) {
         throw invalid_argument("The coffin at this location has already been destroyed.");
     }
+#ifndef TERMINAL
+    // In graphical mode, this will be handled by the UI
+    return;
+#else
     vector<pair<size_t, Item>> redItems;
     for (size_t i = 0; i < items.size(); ++i) {
         if (items[i].getColor() == ItemColor::Red) {
@@ -584,6 +598,7 @@ void Hero::advance(Dracula& dracula, InvisibleMan& invisibleMan, TaskBoard& task
         cout << "Invalid choice.\n";
         return;
     }
+#endif
 }
 
 void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
@@ -601,6 +616,10 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
     }
 
     if (atInvisibleMan) {
+#ifndef TERMINAL
+        // In graphical mode, this will be handled by the UI
+        return;
+#else
         if (!taskBoard.allCluesDelivered()) {
             throw invalid_argument("Not all items have been delivered. You cannot defeat the Invisible man yet.");
         }
@@ -639,7 +658,7 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
             cout << playerName << "(" << heroName << ") used " << selectedItem.second.getItemName() << " against the Invisible man.\n";
             removeItem(selectedItem.first);
             remainingActions--;
-            if (taskBoard.getInvisibleManDefeatStrength() >= 9) {
+            if (taskBoard.getInvisibleManDefeatStrength() == 9) {
                 taskBoard.defeatInvisibleMan();
                 cout << playerName << "(" << heroName << ") has defeated the Invisible man!\n";
             }
@@ -648,6 +667,7 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
             cout << "Invalid choice.\n";
             return;
         }
+#endif
     }
 
     if (!taskBoard.allCoffinsDestroyed()) {
@@ -656,6 +676,10 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
     if (currentLocation != dracula.getCurrentLocation()) {
         throw invalid_argument("You are not at the same location as Dracula.");
     }
+#ifndef TERMINAL
+    // In graphical mode, this will be handled by the UI
+    return;
+#else
     vector<pair<size_t, Item>> yellowItems;
     for (size_t i = 0; i < items.size(); ++i) {
         if (items[i].getColor() == ItemColor::Yellow) {
@@ -691,12 +715,13 @@ void Hero::defeat(Dracula& dracula, TaskBoard& taskBoard) {
         cout << heroName << " used " << selectedItem.second.getItemName() << " against Dracula.\n";
         removeItem(selectedItem.first);
         remainingActions--;
-        if (taskBoard.getDraculaDefeatStrength() >= 6) {
+        if (taskBoard.getDraculaDefeatStrength() == 6) {
             cout << playerName << "(" << heroName << ") has defeated the Dracula!\n";
         }
     } else {
         cout << "Invalid choice.\n";
     }
+#endif
 }
 
 void Hero::moveTwoSteps() {

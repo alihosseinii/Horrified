@@ -50,6 +50,10 @@ void FrenzyMarker::advance(Monster* dracula, Monster* invisibleMan) {
     }
 }
 
+void FrenzyMarker::setCurrentFrenzied(Monster* monster) {
+    currentFrenzied = monster;
+}
+
 int FrenzyMarker::getFrenzyLevel() const {
     if (currentFrenzied == nullptr) {
         return 0;

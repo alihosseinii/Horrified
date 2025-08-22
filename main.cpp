@@ -1,10 +1,12 @@
-#include <iostream>
 #include "game.hpp"
 
 using namespace std;
 
 int main(){
-  Game game;
-  game.play();
-  return 0;
+    Game game;
+
+    game.init();
+    game.play();
+
+    return 0;
 }
